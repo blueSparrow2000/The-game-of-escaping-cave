@@ -5,6 +5,12 @@ import items, enemies, npcs, actions, world, util, memories
 Possible actions of the player are determined by tiles!
 e.g. go up,down, left, right, show inventory, heal (default actions that can be used on all tiles)
 flee, attack (on mob tiles)
+
+How to add tiles to your custom map:
+
+You need to add the class name (Like 'MerchantRoom') in a map builder excel file.
+Also, when you finish designing a map, you should ctrl + C/ctrl + V the map into txt file to finally save the map.
+Then, add the map's to 'map_lists' in initial_setting.Setting() class's method 'get_map_name()'.
 '''
 
 
@@ -48,7 +54,7 @@ class EnemyRoom(MapTile):  # abstract class
         self.engage(the_player)
 
     def engage(self,the_player):
-        skill_no = random.randint(1, self.enemy.skills)
+        skill_no = random.randint(0, self.enemy.skills)
         if self.enemy.is_alive():
             if not self._visited:  # visit for the first time
                 the_player.viewed_mobs.append(self.enemy)
@@ -56,11 +62,11 @@ class EnemyRoom(MapTile):  # abstract class
                 # attacks first with probability 50%
                 if not util.random_success(0.5):  # enemy do not attack first...
                     return
-            if self.enemy.skills == 1 or skill_no == 1:
-                the_player.take_damage(self.enemy.damage)
-                print("Enemy does {} damage. You have {} HP remaning.".format(self.enemy.damage, the_player.hp))
+            if self.enemy.skills == 0 or skill_no == 0:
+                if the_player.take_damage(self.enemy.damage):
+                    print("Enemy does {} damage.\n{} HP: {}".format(round(self.enemy.damage,1),the_player.name ,round(the_player.hp,1)))
             else:
-                skill = getattr(self.enemy, self.enemy.skill_list[skill_no - 2].__name__)
+                skill = getattr(self.enemy, self.enemy.skill_list[skill_no - 1].__name__)
                 skill(the_player)
 
     def available_actions(self):
@@ -163,7 +169,7 @@ class WandererRoom(NPCRoom):  # merchant has trades
                 '''
             else:
                 return '''
-                Merchant: What?
+                Wanderer: What?
                 '''
         else:
             return '''
@@ -258,6 +264,16 @@ class FindWandRoom(LootRoom):
         It's a wand! You pick it up.
         '''
 
+class FindStaffRoom(LootRoom):
+    def __init__(self, x, y):
+        super().__init__(x, y, items.Staff())
+
+    def call_intro(self):
+        return '''
+        Something's lying down there...
+        It's a staff! You pick it up.
+        '''
+
 class FindKeyRoom(LootRoom):
     def __init__(self, x, y, key_address_code):
         super().__init__(x, y, items.Key(key_address_code))
@@ -321,6 +337,19 @@ class GandalphRoom(EnemyRoom):
         if self.enemy.is_alive():
             return '''
             {}: YOU SHALL NOT PASS!!!!!!!
+            '''.format(self.enemy.name)
+        else:
+            return '''
+            Only a trace of unknown sparkle remained.
+            '''
+class HarryPotterRoom(EnemyRoom):
+    def __init__(self, x, y):
+        super().__init__(x, y, enemies.HarryPotter())
+
+    def intro_text(self):
+        if self.enemy.is_alive():
+            return '''
+            {}: You are gonna regret this...!
             '''.format(self.enemy.name)
         else:
             return '''
