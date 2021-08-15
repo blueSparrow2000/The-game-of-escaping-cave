@@ -72,7 +72,7 @@ class Tutorial():
         선택지에 'z': attack 가 생기며, 'z'를 입력한 후 사용자가 원하는 무기를 선택지에서 선택하면 됩니다.
         무기의 종류와 정보는 인벤토리 'e'를 통해 전투 중을 제외하고 언제든지 볼 수 있습니다.
         
-        ======= 타일 ========
+        ======= 타일(방) ========
         마지막으로 타일입니다. 
         이 게임은 플레이어가 타일을 이동하며 사건이 발생합니다.
         흔한 타일로는 '그냥 동굴길', '금화의 방', '몬스터의 방',  '아이템의 방', '잠긴 방' 등이 있습니다.
@@ -160,7 +160,7 @@ class Tutorial():
         print("")
 
     def key_input(self):
-        question = {'Korean':"아무거나 누르세요: ",'English':"Type anything to continue: "}
+        question = {'Korean':"아무거나 눌러 튜토리얼을 종료하십시오: ",'English':"Type anything to continue: "}
         user_input = input(question[self.language])
         print(self.comment[self.language])
     #
