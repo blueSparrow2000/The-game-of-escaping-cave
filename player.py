@@ -9,7 +9,7 @@ class Player:
     def __init__(self,name):
         self.name = name
         self.title = ''
-        self.inventory = [items.Gold(25), items.Rock(), items.Apple(),items.Bow(),items.Arrow(),items.Wand()]
+        self.inventory = [items.Gold(25), items.Rock(), items.Apple()]
         self.stats = {'agi': statuses.Agility(), 'def': statuses.Defence(), 'lrn': statuses.Learning(), 'str': statuses.Strength(), 'mga': statuses.MagicAffinity(), 'stb': statuses.Stability()}
         self.hp = 100
         self.hpmax = 100
@@ -20,6 +20,10 @@ class Player:
 
         self.location_x, self.location_y = world.starting_position
         self.victory = False
+
+    def give(self,*items):
+        items_list = [*items]
+        self.inventory = self.inventory + items_list
 
     def xpmax_calc(self):
         return 1 + math.ceil(10*math.log(self.level+1))
@@ -148,6 +152,7 @@ class Player:
         if util.random_success(self.stats['agi'].flee_prob()):  # flee success probability is 50%
             available_moves = tile.adjacent_moves()
             r = random.randint(0, len(available_moves) - 1)
+            print('Flee successful!')
             self.do_action(available_moves[r])
         else:
             print("Flee failed!")
@@ -168,13 +173,17 @@ class Player:
             self.hp = self.hp-math.floor(enemy_damage*self.stats['def'].damage_decrease_multiplier()*(1-defence_multiplier))
             if not self.is_alive():
                 self.resurrection_check()
-        else:
+            return True
+        else:  # dodge successful
             print("You Dodged enemy's attack!")
+            return False
 
     def resurrection_check(self):
         for i in self.inventory:
             if i.name == 'Rabbit foot':
                 self.hp = i.resurrection_hp
+                self.inventory.remove(i)
+                print("[You revived due to something magical]")
 
     # helper method for heal
     def heal_calc(self,amt):
@@ -296,7 +305,7 @@ class Player:
             if item: # if not quit (item is returned)
                 if item.is_healing():
                     self.hp = self.heal_calc(item.healamt)
-                    print("Yummy~. \nHP: {}\n".format(self.hp))
+                    print("Yummy~. \n{} HP: {}\n".format(self.name,self.hp))
                 else:
                     print("Oooh, xp!")
                     self.gain_xp(item.contained_xp)
@@ -363,7 +372,10 @@ class Player:
             print("You use {} against {}!".format(selected_weapon.name, enemy.name))
             dmg = selected_weapon.get_damage(self.stats['stb'].get_stability(),self.stats['str'].strength_multiplier(selected_weapon),self.stats['mga'].magic_multiplier(selected_weapon))
             enemy.hp -= round(dmg,1)
-            print("It did {} damage!".format(round(dmg,1)))
+            crit = ''
+            if selected_weapon.damage<dmg:
+                crit = ' critical'
+            print("It did {}{} damage!".format(round(dmg,1),crit))
 
             if isinstance(selected_weapon, items.Shootable):  # consume ammo
                 self.consume_ammo(selected_weapon)
@@ -372,7 +384,7 @@ class Player:
                 print("You killed {}!".format(enemy.name))
                 enemy.death(self)
             else:
-                print("{} HP: {}.".format(enemy.name, enemy.hp))
+                print("{} HP: {}.".format(enemy.name, round(enemy.hp,1)))
 
     def choice_selector(self, available_actions, available_hotkeys, action_input):
         while action_input not in available_hotkeys:
