@@ -58,7 +58,8 @@ class Tutorial():
         *: 나의 현재 위치
         ?: 내가 방문하지 않은 타일
         Sta,Gol,Fin...: 방 이름의 앞 글자를 딴 이니셜. 서로 같은 이니셜이지만, 실제로는 다른 방일 수도 있다.
-        미니맵은 어디까지나 탐험을 도와주는 보조 기능일 뿐, 당신의 실력으로 탈출해야 한다!
+        
+        미니맵은 어디까지나 탐험을 도와주는 보조 기능일 뿐, 당신의 실력(기억력과 결단력)으로 탈출해야 합니다!
 
         === 스테이터스(스텟) ===
         이 게임에는 플레이어의 능력치를 증가시켜주는 스테이터스가 있습니다.
@@ -67,7 +68,7 @@ class Tutorial():
         레벨이 높을수록 레벨업에 필요한 경험치량이 (∝log) 증가합니다.
         현재(V1.1) 민첩, 방어, 학습, 물리 공격, 마법 공격, 공격 안정성의 6가지가 존재합니다.
         튜토리얼을 하기 전에 플레이어의 기본 레벨을 결정할때 미리 레벨업 해둘 수 있습니다.
-        각종 스텟에 대한 더 자세한 설명을 알고 싶다면 선택지의 'vs': View status 를 참고하여 'vs'를 입력하십시오.
+        각종 스텟에 대한 더 자세한 설명을 알고 싶다면 선택지의 ['vs': View status] 에 해당하는 'vs'를 입력하십시오.
                 
         ======= 도감 ========   
         지금까지 만났던 몬스터들을 적어둔 도감입니다. 
@@ -82,7 +83,7 @@ class Tutorial():
         
         ======= 공격 ========
         몬스터가 있는 타일로 이동하면 몬스터가 나타납니다.
-        선택지에 'z': attack 가 생기며, 'z'를 입력한 후 사용자가 원하는 무기를 선택지에서 선택하면 됩니다.
+        선택지에 ['z': attack] 가 생기며, 'z'를 입력한 후 사용자가 원하는 무기를 선택지에서 선택하면 됩니다.
         무기의 종류와 정보는 인벤토리 'e'를 통해 전투 중을 제외하고 언제든지 볼 수 있습니다.
                 
         ======= 타일(방) ========
@@ -148,7 +149,7 @@ class Tutorial():
         
         ======= Attack =========
         If you move to a tile with a monster, the monster will appear.
-        'z': attack is created in the selection option. 
+        ['z': attack] is created in the selection option. 
         After entering 'z', the user can select the desired weapon from the following selection list, which will attack automatically with that weapon.
         Weapon and it's information can be viewed at any time (except during combat) through inventory (type 'e').
         
