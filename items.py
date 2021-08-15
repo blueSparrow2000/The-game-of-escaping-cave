@@ -10,11 +10,14 @@ class Item():
     def __str__(self):
         return "{}\n=====\n{}\nValue: {}".format(self.name, self.description, self.value)
 
+
+################################################################################## Misc (just item)
+
 class RabbitFoot(Item):
     def __init__(self, resurrection_hp):
         self.resurrection_hp = resurrection_hp
         super().__init__(name='Rabbit foot',
-                         description='Something lucky may happen!',
+                         description='It feels like something lucky is gonna happen!',
                          value=1000)
 
 class Gold(Item):
@@ -22,7 +25,6 @@ class Gold(Item):
         self.amt = amt
         super().__init__(name='Gold', description='A round coin with {} stamped on the front!'.format(str(self.amt)),
                          value=self.amt)
-
 
 class Key(Item):
     def __init__(self, address_code):
@@ -49,7 +51,8 @@ class Bone(Junk):
         super().__init__(name='Bone', description='... Whoes was this...?', value=1)
 
 
-################################################# Food
+################################################################################## Food
+
 class Food(Item):
     def __init__(self, name, description, value, healamt):
         self.healamt = healamt
@@ -86,12 +89,13 @@ class pill(Food):
     def __init__(self):
         super().__init__(name='Pill', description='One pill will heal everything.', value=100, healamt=100)
 
-# 각각의 무기 객체마다 숙련도(proficiency)가 있음(0~2). 같은 클래스의 물품은 같은 숙련도가 적용됨
+################################################# Weapon
+# damage가 높을수록 damage_deviation가 낮아지는 경향이 있음. 마법 무기는 그게 극심함.
+#
+# In progress: 각각의 무기 객체마다 숙련도(proficiency)가 있음(0~2). 같은 클래스의 물품은 같은 숙련도가 적용됨
 # player의 정보에 각각의 물품에 대한 숙련도를 저장하는 딕셔너리가 있어야 함. 매번 물건을 얻을 때 마다 항목이 추가됨.
 # 따라서 숙련도 정보는 무기 클래스에 있는게 아니라, player 클래스에 있어야 함. OK?
 
-################################################# Weapon
-# damage가 높을수록 damage_deviation가 낮아지는 경향이 있음. 마법 무기는 그게 극심함.
 
 class Weapon(Item):
     def __init__(self, name, description, value, damage, damage_deviation=0 ,ammoname = None, lvrestriction=0):
@@ -126,19 +130,6 @@ class Dagger(Weapon):
                          description='A small dagger with some rust. Somewhat more dangerous than a rock.', value=10,
                          damage=4,damage_deviation=2, lvrestriction=1)
 
-
-class Magical(Weapon):  # Weapon that is magical
-    def __init__(self, name, description, value, damage, damage_deviation=0 ,ammoname = None,lvrestriction=5):
-        super().__init__(name, description, value, damage, damage_deviation, ammoname,lvrestriction)
-
-
-class Wand(Magical):
-    def __init__(self):
-        super().__init__(name='Basic Wand', description="A long stick that helps casting spells. Don't expect too much",
-                         value=50, damage=16 ,damage_deviation=12,ammoname = None, lvrestriction=5)
-
-################################################################################################### In progress...
-
 class Shield(Weapon):
     def __init__(self):
         luck = math.ceil(random.uniform(0, 5))
@@ -146,20 +137,67 @@ class Shield(Weapon):
                          value=50 + luck*2, damage=(5 + luck), damage_deviation=2,ammoname = None,lvrestriction=1)
 
 
+################################################################################################### Weapons that uses magic
+
+class Magical(Weapon):  # Weapon that is magical
+    def __init__(self, name, description, value, damage, damage_deviation=0 ,ammoname = None,lvrestriction=3):
+        super().__init__(name, description, value, damage, damage_deviation, ammoname,lvrestriction)
+
+    def sharp(self): # reduces damage dev into 75%, more accurate!
+        self.damage_deviation = round(3*self.damage_deviation//4,1)
+
+    def dull(self): # increases damage dev
+        damage_deviation = round(self.damage_deviation*1.5,1)
+        lowest_damage = self.damage - damage_deviation
+        if lowest_damage <0:
+            damage_deviation = self.damage-1 # slightly less than avg damage (so that lowest damage is 1)
+        self.damage_deviation = damage_deviation
+
+    def strange(self):  # strange...
+        self.damage += 5
+
+    def charming(self): # In progress... (currently nothing)
+        return
+
+### global variables for Magical
+type_dic = {'sharp': Magical.sharp, 'dull':Magical.dull, 'strange':Magical.strange, 'charming':Magical.charming}
+type_list = list(type_dic.keys())
+def type_initializer(object,type):
+    global type_dic, type_list
+    method = getattr(object, type_dic[type].__name__)
+    method()
+    return type
+
+def choose_type():
+    global type_dic, type_list
+    return random.choice(type_list)
+
+class Wand(Magical):
+    def __init__(self):
+        self.type = choose_type()
+        super().__init__(name='Basic Wand', description="A long stick that helps casting spells. This wand is a 『{}』 type. Don't expect too much.".format(self.type),
+                         value=50, damage=16 ,damage_deviation=12,ammoname = None, lvrestriction=3)
+        type_initializer(self,self.type)
+
+class Staff(Magical):
+    def __init__(self):
+        #self.type = type_initializer(self)
+        super().__init__(name='Mage Staff', description="A staff used by licensed wizards. Very powerful.",
+                         value=50, damage=16 ,damage_deviation=12, ammoname = None, lvrestriction=6)
+
+    def type_initializer(self):
+        pass
+################################################################################################### Shootable
 
 class Shootable(Weapon):  # Weapon that needs ammo
     def __init__(self, name, description, value, damage, damage_deviation=0 ,ammoname = None, lvrestriction=2):
         super().__init__(name, description, value, damage, damage_deviation,ammoname, lvrestriction)
-
-
 
 class Bow(Shootable):  # need arrow to use. Consumes arrow
     def __init__(self):
         luck = math.ceil(random.uniform(0, 10))
         super().__init__(name='Bow', description="A compound bow. There is no sound of the bow string being pulled.",
                          value=50 + luck, damage=(10 + luck),damage_deviation=4, ammoname = 'Arrow', lvrestriction=2)
-
-
 
 class Ammo(Item):
     def __init__(self, name, description, value):
@@ -174,8 +212,7 @@ class Arrow(Ammo):
         super().__init__(name='Arrow', description="An arrow used to hunt bears.",
                          value=5)
 
-
-
+################################################################################################### In progress...
 
 
 
