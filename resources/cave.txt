@@ -1,0 +1,11 @@
+	FindDaggerRoom		BanditRoom		BanditRoom		
+	GoldRoom	EmptyCavePath	EmptyCavePath	EmptyCavePath	ScorpionRoom	EmptyCavePath	GoldRoom
+	FindKeyRoom0000		GoldRoom				
+			ScorpionRoom			GoldRoom	RetiredMageRoom
+GoldRoom	BanditRoom	MerchantRoom	EmptyCavePath	RetiredMageRoom	ScorpionRoom	FindDaggerRoom	
+		ScorpionRoom	StartingRoom	EmptyCavePath		EmptyCavePath	GandalphRoom
+			EmptyCavePath				LeaveCaveRoom
+			GoldRoom				
+		WandererRoom	EmptyCavePath	BanditRoom	FindWandRoomLocked0000		
+	GoldRoom	ScorpionRoom					
+		EmptyCavePath	RetiredMageRoom	GoldRoom			
