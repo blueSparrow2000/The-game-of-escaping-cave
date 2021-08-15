@@ -8,7 +8,6 @@ However, note that actions are executed on the tile.py.
 
 '''
 
-
 class NPC(Enemy):
     def __init__(self, name, description, hp, damage,death_message='...', drops=None, xp = 0):
         self.maxhp = hp

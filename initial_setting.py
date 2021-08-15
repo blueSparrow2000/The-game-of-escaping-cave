@@ -8,6 +8,8 @@ class Setting:
         print('Now, choose the map!')
         map_lists = ['tutorial','cave','deep_cave'] #,'story_mode'
         choice = self.choice_selector(map_lists)
+        if not choice:
+            choice = 'cave'
         print('Choice: {}'.format(choice))
         print('='*70)
         return choice
@@ -26,7 +28,7 @@ class Setting:
             return name
 
     def set_player_level(self,player):
-        max_handicap = 5
+        max_handicap = 6
         level_handicap = -1
         while level_handicap != 0 and level_handicap!='q' and (not 1<=level_handicap<=max_handicap):
             level_handicap = input ("Enter player's level(integer) from 1 to {}. Maximum possible handicap is {} levels. (If you don't want handicap, press '0' or press 'q'): ".format(max_handicap,max_handicap))
@@ -84,6 +86,7 @@ class Setting:
         if set_input != 'q':
             return available_choices[set_input]
 
+        return None
 
 
 

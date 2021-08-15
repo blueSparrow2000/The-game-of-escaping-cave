@@ -3,8 +3,9 @@ import items, util
 '''
 Enemy's possible actions should be written here.
 That is, enemy must determine which attack and how much damage it will do in this module.
-However, note that actions are executed on the tile.py.
 
+However, note that actions are executed on the tile.py.
+=> Make a 'corresponding tile' in order to place the enemy mobs!
 '''
 
 class Enemy:
@@ -36,13 +37,14 @@ class Enemy:
                     print('Found {}!'.format(drop.name))
         player.gain_xp(self.xp)
 
-
 class Scorpion(Enemy):
     def __init__(self):
         self.number = random.randint(1,3)
-        super().__init__(name='Scorpion', description="It's sting is very itchy!", hp=5*self.number,
+        many_suffix = ''
+        if self.number>1:
+            many_suffix = 's'
+        super().__init__(name='{} Scorpion{}'.format(self.number,many_suffix), description="It's sting is very itchy!", hp=5*self.number,
                          damage=1*self.number,death_message='KIAAAA...', drop_prob_dict={items.ScorpionSting():0.8},xp = 1*self.number)
-
 
 class Bandit(Enemy):
     def __init__(self):

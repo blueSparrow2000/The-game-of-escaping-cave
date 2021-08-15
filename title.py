@@ -79,7 +79,9 @@ class Archer(Title):
 
 class GoldCollector(Title):
     def __init__(self):
-        super().__init__(title = ' the Gold collector')
+        #t = ' the Gold collector'
+        t = ' the Rich'
+        super().__init__(title = t)
 
     def count_gold(self,inventory):
         gold = 0

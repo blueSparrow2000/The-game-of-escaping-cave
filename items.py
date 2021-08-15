@@ -160,7 +160,7 @@ class Magical(Weapon):  # Weapon that is magical
         return
 
 ### global variables for Magical
-type_dic = {'sharp': Magical.sharp, 'dull':Magical.dull, 'strange':Magical.strange, 'charming':Magical.charming}
+type_dic = {'『sharp』': Magical.sharp, '『dull』':Magical.dull, '『strange』':Magical.strange, '『charming』':Magical.charming}
 type_list = list(type_dic.keys())
 def type_initializer(object,type):
     global type_dic, type_list
@@ -175,18 +175,22 @@ def choose_type():
 class Wand(Magical):
     def __init__(self):
         self.type = choose_type()
-        super().__init__(name='Basic Wand', description="A long stick that helps casting spells. This wand is a 『{}』 type. Don't expect too much.".format(self.type),
+        super().__init__(name='Basic Wand', description="A long stick that helps casting spells. Don't expect too much.\nThis wand is a {} type.".format(self.type),
                          value=50, damage=16 ,damage_deviation=12,ammoname = None, lvrestriction=3)
         type_initializer(self,self.type)
 
 class Staff(Magical):
     def __init__(self):
-        #self.type = type_initializer(self)
-        super().__init__(name='Mage Staff', description="A staff used by licensed wizards. Very powerful.",
-                         value=50, damage=16 ,damage_deviation=12, ammoname = None, lvrestriction=6)
+        self.type = choose_type()
+        super().__init__(name='Mage Staff', description="A staff used by licensed wizards. It is advanced type of a wand.\nThis staff is a {} type.".format(self.type),
+                         value=50, damage=30 ,damage_deviation=24, ammoname = None, lvrestriction=6)
+        type_initializer(self,self.type)
 
-    def type_initializer(self):
-        pass
+class Scepter(Magical):
+    def __init__(self):
+        super().__init__(name='Scepter',
+                         description="Long stick.",
+                         value=50, damage=100, damage_deviation=0, ammoname=None, lvrestriction=20)
 ################################################################################################### Shootable
 
 class Shootable(Weapon):  # Weapon that needs ammo

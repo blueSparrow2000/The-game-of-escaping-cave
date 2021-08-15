@@ -1,14 +1,14 @@
-			FindKeyRoom0000					FindWandRoomLocked0003			ScorpionRoom	GoldRoom	FindWandRoom	
-FindDaggerRoom	WandererRoom	EmptyCavePath	RetiredMageRoom	FindKeyRoom0003				RetiredMageRoom	BanditRoom	GoldRoomLocked0004	EmptyCavePath	ScorpionRoom		
+			FindKeyRoom0000			EmptyCavePath		FindWandRoomLocked0003			ScorpionRoom	GoldRoom	FindWandRoom	
+FindDaggerRoom	WandererRoom	EmptyCavePath	HarryPotterRoom	FindKeyRoom0003				RetiredMageRoom	BanditRoom	GoldRoomLocked0004	EmptyCavePath	ScorpionRoom		
 	EmptyCavePath	ScorpionRoom			ScorpionRoom	EmptyCavePath	EmptyCavePath	EmptyCavePath		BanditRoom		RetiredMageRoom	GoldRoom	WandererRoom
 FindKeyRoom0004	BanditRoom		EmptyCavePath		EmptyCavePath	GoldRoom		GoldRoom	EmptyCavePath	EmptyCavePath		EmptyCavePath	EmptyCavePath	
 	EmptyCavePath	EmptyCavePath	RetiredMageRoom	GoldRoom	GoldRoom								EmptyCavePath	
 			GoldRoomLocked0002			FindDaggerRoom	ScorpionRoom				GoldRoom		EmptyCavePath	FindDaggerRoom
 			BanditRoom				EmptyCavePath			RetiredMageRoom	RetiredMageRoom	RetiredMageRoom	RetiredMageRoom	
 GoldRoom	BanditRoom	EmptyCavePath	EmptyCavePath	EmptyCavePath	ScorpionRoom	EmptyCavePath	GoldRoom	EmptyCavePath	ScorpionRoom	EmptyCavePath				
-FindKeyRoom0001			StartingRoom				EmptyCavePath		EmptyCavePath				GoldRoom	
+FindKeyRoom0001			StartingRoom	FindStaffRoomLocked9999			EmptyCavePath		EmptyCavePath				GoldRoom	
 			EmptyCavePath			ScorpionRoom	GoldRoom		BanditRoom	GoldRoomLocked0000	EmptyCavePath	BanditRoom	GandalphRoom	LeaveCaveRoom
 MerchantRoom	EmptyCavePath		EmptyCavePath			EmptyCavePath					ScorpionRoom			
 	EmptyCavePath	EmptyCavePath	GoldRoom	EmptyCavePath	EmptyCavePath	EmptyCavePath		EmptyCavePath						
-	RetiredMageRoom	EmptyCavePath				EmptyCavePath	EmptyCavePath	BanditRoom	GoldRoomLocked0001	EmptyCavePath			EmptyCavePath	MerchantRoom
+GoldRoom	RetiredMageRoom	EmptyCavePath				EmptyCavePath	EmptyCavePath	BanditRoom	GoldRoomLocked0001	EmptyCavePath			EmptyCavePath	MerchantRoom
 		GoldRoom	WandererRoom	FindDaggerRoom			GoldRoom			EmptyCavePath	RetiredMageRoom	FindKeyRoom0002	EmptyCavePath	

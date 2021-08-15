@@ -9,10 +9,14 @@ class Player:
     def __init__(self,name):
         self.name = name
         self.title = ''
-        self.inventory = [items.Gold(25), items.Rock(), items.Apple()]
+        self.inventory = [items.Gold(25), items.Rock(), items.Apple(),items.Staff()]
         self.stats = {'agi': statuses.Agility(), 'def': statuses.Defence(), 'lrn': statuses.Learning(), 'str': statuses.Strength(), 'mga': statuses.MagicAffinity(), 'stb': statuses.Stability()}
         self.hp = 100
         self.hpmax = 100
+        ########################## Feature in progress...
+        self.soul = 100
+        self.soulmax = 100
+        ##########################
         self.level = 0
         self.xp = 0
         self.xpmax = self.xpmax_calc()
@@ -158,7 +162,7 @@ class Player:
             print("Flee failed!")
 
 
-    def do_action(self, action, **kwargs):
+    def do_action(self, action, **kwargs): # How to use: getattr(the object that calls following method,classname(that contains the method attribute).method.__name__)()
         action_method = getattr(self, action.method.__name__)
         if action_method:
             action_method(**kwargs)
@@ -375,7 +379,7 @@ class Player:
             crit = ''
             if selected_weapon.damage<dmg:
                 crit = ' critical'
-            print("It did {}{} damage!".format(round(dmg,1),crit))
+            print("You did {}{} damage!".format(round(dmg,1),crit))
 
             if isinstance(selected_weapon, items.Shootable):  # consume ammo
                 self.consume_ammo(selected_weapon)
