@@ -7,7 +7,6 @@ However, note that actions are executed on the tile.py.
 
 '''
 
-
 class Enemy:
     def __init__(self, name, description, hp, damage, death_message='...', drop_prob_dict=None, xp = 0):
         self.name = name
@@ -18,7 +17,8 @@ class Enemy:
         self.death_message = death_message
         self.drop_prob_dict = drop_prob_dict
         self.xp = xp
-        self.skills = 1
+        self.skill_list = []
+        self.skills = len(self.skill_list)
 
     def is_alive(self):
         return self.hp > 0
@@ -60,10 +60,10 @@ class RetiredMage(Enemy):
 
 class Gandalph(Enemy):
     def __init__(self):
-        super().__init__(name='Gandalph the grey', description="What? Gandalph..? Why the 'cave' is he here?", hp=100,
-                         damage=15,death_message='For even the very wise cannot see all ends...', drop_prob_dict={items.Wand():1,items.Gold(1000):1},xp = 100)
-        self.skills = 3    # has 3 skills
-        self.skill_list = [self.heal, self.fireBall]  # second skill!
+        super().__init__(name='Gandalph the grey', description="What? Gandalph..? Why the 'cave' is he here?", hp=200,
+                         damage=15,death_message='For even the very wise cannot see all ends...', drop_prob_dict={items.Staff():1,items.Gold(1000):1},xp = 100)
+        self.skill_list = [self.heal, self.fireBall]
+        self.skills = len(self.skill_list)
 
     # helper method for heal
     def heal_calc(self,amt):
@@ -71,10 +71,46 @@ class Gandalph(Enemy):
 
     def heal(self,player):
         self.heal_calc(20)
-        print("{} healed himself!\nHP: {}".format(self.name, self.hp))
+        print("{} healed himself!\nHP: {}".format(self.name, round(self.hp,1)))
 
     def fireBall(self,player):
         fireBall_damage = random.randint(10,40)
-        player.take_damage(fireBall_damage)
-        print("{} fired a fireball worth {} damage. You have {} HP remaning.".format(self.name,fireBall_damage, player.hp))
+        if player.take_damage(fireBall_damage):
+            print("{} fired a fireball worth {} damage. {} HP: {}".format(self.name, fireBall_damage, player.name ,round(player.hp,1)))
 
+class HarryPotter(Enemy):
+    def __init__(self):
+        super().__init__(name='Harry Potter', description="A graduate of the Hogwart... as far as I know.", hp=100,
+                         damage=20,death_message='Numbing the pain for a while will make it worse when you finally feel it...', drop_prob_dict={items.Wand():1,items.Gold(100):1,items.Key('9999'):1},xp = 100)
+        self.skill_list = [self.heal, self.crusio, self.AvadaKedavra]
+        self.skills = len(self.skill_list)
+
+    # helper method for heal
+    def heal_calc(self, amt):
+        self.hp = min(self.hpmax, self.hp + amt)
+
+    def heal(self, player):
+        self.heal_calc(20)
+        print("{} healed himself!\nHP: {}".format(self.name, round(self.hp,1)))
+
+    def crusio(self, player):
+        crusio_damage = random.randint(25, 35)
+        if player.take_damage(crusio_damage):
+            print("{}: Crusio!".format(self.name))
+            print("Spell was worth {} damage. {} HP: {}".format(crusio_damage, player.name ,round(player.hp,1)))
+
+    def AvadaKedavra(self,player):  # can cast only once!
+        AvadaKedavra_damage = random.randint(99,99)  # Sudden death spell. Player needs to have high defence status to not instant-die.
+        if player.take_damage(AvadaKedavra_damage):
+            print("{}: Avada-Kedavra!".format(self.name))
+            print("Spell was worth {} damage. {} HP: {}".format(AvadaKedavra_damage, player.name ,round(player.hp,1)))
+            self.skill_list.remove(self.AvadaKedavra)
+            self.skills = len(self.skill_list)
+
+###################################################################################################################### In progress...
+class DrStrange(Enemy):
+    def __init__(self):
+        super().__init__(name='Dr.Strange', description="", hp=100,
+                         damage=20,death_message='', drop_prob_dict={},xp = 100)
+        self.skill_list = []
+        self.skills = len(self.skill_list)
