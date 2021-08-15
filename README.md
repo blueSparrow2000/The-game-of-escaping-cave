@@ -9,3 +9,5 @@ Basic template is created with above link.
 
 
 All other classes/functions/texts are developed by myself.
+
+Develope period: 2021.8.13 ~ 
