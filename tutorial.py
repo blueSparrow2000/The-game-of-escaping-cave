@@ -46,7 +46,7 @@ class Tutorial():
         
         ===== 행동 방법 =====
         플레이어가 할 수 있는 행동은 선택지로 제공됩니다.
-        선택지 왼쪽에 있는 단축키를 선택하면 행동을 할 수 있습니다.
+        선택지 왼쪽에 있는 단축키를 타이핑하면 행동을 할 수 있습니다.
         기본적인 움직임(앞, 뒤, 오른쪽, 왼쪽) 및 인벤토리 확인, 스테이터스 확인, 동굴 몬스터 도감 보기, 음식먹기 등이 가능합니다.
         인벤토리 사이즈는 현재 무제한이니 아이템이 넘친다는 걱정은 하지 않아도 됩니다.
         
@@ -98,7 +98,7 @@ class Tutorial():
         
         ===== How to act =====
         The actions the player can take are provided as options.
-        You can perform an action by selecting the hot key to the left of the option.
+        You can perform an action by typing the hot key to the left of the option.
         Common actions are; basic movements (front, back, right, left) and inventory check, status check, cave monster encyclopedia view, food, etc.
         Inventory size is currently unlimited, so you don't have to worry about overflowing items.
         
