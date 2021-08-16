@@ -69,6 +69,9 @@ class EnemyRoom(MapTile):  # abstract class
                 skill = getattr(self.enemy, self.enemy.skill_list[skill_no - 1].__name__)
                 skill(the_player)
 
+            if not the_player.is_alive():
+                the_player.resurrection_check()
+
     def available_actions(self):
         if self.enemy.is_alive():
             return [actions.Flee(tile=self), actions.Attack(enemy=self.enemy), actions.Eat()]
@@ -196,17 +199,31 @@ class StartingRoom(MapTile):
 
 
 class LeaveCaveRoom(MapTile):
+    def __init__(self, x, y):
+        self.escape = False
+        super().__init__(x, y)
+
     def intro_text(self):
-        return '''
+        print('''
         You see a bright light in the distance...
-        ... it glows as you get closer! It's sunlight!
-        
-        Victory is yours!
-        '''
+        ''')
+        if util.ask_player('Would you like to stay longer in the cave?', ['Y', 'N']) == 'N':
+            self.escape = True
+            return '''
+            ... it glows as you get closer! 
+            
+            It's sunlight! 
+            
+            Hooray!
+            '''
+        else:
+            return '''
+            Then I'll stay here a little longer.
+            '''
 
     def modify_player(self, player):
-        player.victory = True
-
+        if self.escape:
+            player.victory = True
 
 class EmptyCavePath(MapTile):
     def intro_text(self):
@@ -284,6 +301,19 @@ class FindKeyRoom(LootRoom):
         It's a key!
         '''
 
+class FindRabbitFootRoom(LootRoom):
+    def __init__(self, x, y):
+        self.hp_list = [25,50,75]
+        self.lucky_dic = {25:'little',50:'very',75:'super'}
+        self.res_hp = random.choice(self.hp_list)
+        super().__init__(x, y, items.RabbitFoot(self.res_hp))
+
+    def call_intro(self):
+        return '''
+        How lucky I am!
+        I am {} lucky!
+        '''.format(self.lucky_dic[self.res_hp])
+
 class ScorpionRoom(EnemyRoom):
     def __init__(self, x, y):
         super().__init__(x, y, enemies.Scorpion())
@@ -342,6 +372,13 @@ class GandalphRoom(EnemyRoom):
             return '''
             Only a trace of unknown sparkle remained.
             '''
+
+    def available_actions(self):
+        if self.enemy.is_alive():
+            return [actions.Attack(enemy=self.enemy), actions.Eat()]  # cannot flee in front of Gandalph!
+        else:
+            return self.adjacent_moves()+self.peaceful_state_actions
+
 class HarryPotterRoom(EnemyRoom):
     def __init__(self, x, y):
         super().__init__(x, y, enemies.HarryPotter())
