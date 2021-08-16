@@ -17,7 +17,7 @@ print('''
 - Tutorial is now ready! (It's just long lines of texts though... yet...)
 - Memory room update coming soon... (story mode)
 =================================================================================================================
-''')
+''')#
 
 def play():
     # Initial setting
