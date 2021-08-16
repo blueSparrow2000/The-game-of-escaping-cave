@@ -15,12 +15,13 @@ Then, add the map's to 'map_lists' in initial_setting.Setting() class's method '
 
 
 class MapTile:  # abstract class
-    def __init__(self, x, y):
+    def __init__(self, x, y, name):
         self.x = x
         self.y = y
+        self.name = name
         self._visited = False  # 필요하면 써라. mimimap과는 관계없음...
         self.locked_state = ''  # '' means no key needed. Other values is password (each key has that corresponding value) to enter the tile.
-        self.peaceful_state_actions = [actions.ViewInventory(),actions.ViewStatus(),actions.ViewMobpedia(),actions.Eat()]
+        self.peaceful_state_actions = [actions.ViewInventory(),actions.ViewStatus(),actions.ViewMobpedia(),actions.ViewMinimap(),actions.Eat()]
 
     def intro_text(self):
         raise NotImplementedError()
@@ -46,9 +47,10 @@ class MapTile:  # abstract class
 
 
 class EnemyRoom(MapTile):  # abstract class
-    def __init__(self, x, y, enemy):
+    def __init__(self, x, y, name, enemy):
         self.enemy = enemy
-        super().__init__(x, y)
+        super().__init__(x, y,name)
+        self.engage_actions = [actions.Eat(), actions.Flee(tile=self), actions.Attack(enemy=self.enemy)]
 
     def modify_player(self, the_player):
         self.engage(the_player)
@@ -64,7 +66,7 @@ class EnemyRoom(MapTile):  # abstract class
                     return
             if self.enemy.skills == 0 or skill_no == 0:
                 if the_player.take_damage(self.enemy.damage):
-                    print("Enemy does {} damage.\n{} HP: {}".format(round(self.enemy.damage,1),the_player.name ,round(the_player.hp,1)))
+                    print("Enemy does {} damage.\n{} HP: \033[91m{}\033[0m".format(round(self.enemy.damage,1),the_player.name ,round(the_player.hp,1)))
             else:
                 skill = getattr(self.enemy, self.enemy.skill_list[skill_no - 1].__name__)
                 skill(the_player)
@@ -74,14 +76,15 @@ class EnemyRoom(MapTile):  # abstract class
 
     def available_actions(self):
         if self.enemy.is_alive():
-            return [actions.Flee(tile=self), actions.Attack(enemy=self.enemy), actions.Eat()]
+            return self.engage_actions
         else:
             return self.adjacent_moves()+self.peaceful_state_actions
 
 class NPCRoom(EnemyRoom):  # abstract class
-    def __init__(self, x, y, npc):
+    def __init__(self, x, y, name, npc):
         self.attacked = False
-        super().__init__(x, y, npc)
+        super().__init__(x, y, name, npc)
+        self.npc_actions = [actions.Flee(tile=self), actions.Attack(enemy=self.enemy), actions.Talk(npc=self.enemy)]
 
     def add_to_mob_list(self,the_player):
         on_the_list = False
@@ -107,24 +110,17 @@ class NPCRoom(EnemyRoom):  # abstract class
         self.attacked = self.enemy.is_attacked() # attacked check
         if self.enemy.is_alive():
             if self.attacked:
-                return [actions.Flee(tile=self), actions.Attack(enemy=self.enemy), actions.Eat()]
-            return self.adjacent_moves()+[actions.ViewInventory(), actions.ViewStatus(), actions.Flee(tile=self), actions.Eat(), actions.Attack(enemy=self.enemy),actions.Talk(npc=self.enemy)]
+                return self.engage_actions
+            return self.adjacent_moves()+self.peaceful_state_actions+self.npc_actions
         else:
             return self.adjacent_moves()+self.peaceful_state_actions
 
 
 class MerchantRoom(NPCRoom):  # merchant has trades
-    def __init__(self, x, y):
-        super().__init__(x, y, npcs.Merchant())
-
-    def available_actions(self):
-        self.attacked = self.enemy.is_attacked() # attacked check
-        if self.enemy.is_alive():
-            if self.attacked:
-                return [actions.Flee(tile=self), actions.Attack(enemy=self.enemy)]
-            return self.adjacent_moves()+ [actions.ViewInventory(), actions.ViewStatus(), actions.Flee(tile=self), actions.Eat(), actions.Attack(enemy=self.enemy),actions.Talk(npc=self.enemy),actions.Trade(npc=self.enemy)]
-        else:
-            return self.adjacent_moves()+self.peaceful_state_actions
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, npcs.Merchant())
+        self.merchant_actions = [actions.Trade(npc=self.enemy)]
+        self.npc_actions = self.npc_actions + self.merchant_actions
 
     def intro_text(self):
         if self.enemy.is_alive():
@@ -147,17 +143,8 @@ class MerchantRoom(NPCRoom):  # merchant has trades
             '''
 
 class WandererRoom(NPCRoom):  # merchant has trades
-    def __init__(self, x, y):
-        super().__init__(x, y, npcs.Wanderer())
-
-    def available_actions(self):
-        self.attacked = self.enemy.is_attacked() # attacked check
-        if self.enemy.is_alive():
-            if self.attacked:
-                return [actions.Flee(tile=self), actions.Attack(enemy=self.enemy), actions.Eat()]
-            return self.adjacent_moves()+ [actions.ViewInventory(), actions.ViewStatus(), actions.Flee(tile=self), actions.Eat(), actions.Attack(enemy=self.enemy),actions.Talk(npc=self.enemy)]
-        else:
-            return self.adjacent_moves()+self.peaceful_state_actions
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, npcs.Wanderer())
 
     def intro_text(self):
         if self.enemy.is_alive():
@@ -199,9 +186,9 @@ class StartingRoom(MapTile):
 
 
 class LeaveCaveRoom(MapTile):
-    def __init__(self, x, y):
+    def __init__(self, x, y, name):
         self.escape = False
-        super().__init__(x, y)
+        super().__init__(x, y, name)
 
     def intro_text(self):
         print('''
@@ -238,9 +225,9 @@ class EmptyCavePath(MapTile):
 
 
 class LootRoom(MapTile):  # abstract class
-    def __init__(self, x, y, item):
+    def __init__(self, x, y, name, item):
         self.item = item
-        super().__init__(x, y)
+        super().__init__(x, y,name)
 
     def add_loot(self, player):
         player.inventory.append(self.item)
@@ -261,8 +248,8 @@ class LootRoom(MapTile):  # abstract class
         '''
 
 class FindDaggerRoom(LootRoom):
-    def __init__(self, x, y):
-        super().__init__(x, y, items.Dagger())
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, items.Dagger())
 
     def call_intro(self):
         return '''
@@ -272,8 +259,8 @@ class FindDaggerRoom(LootRoom):
 
 
 class FindWandRoom(LootRoom):
-    def __init__(self, x, y):
-        super().__init__(x, y, items.Wand())
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, items.Wand())
 
     def call_intro(self):
         return '''
@@ -282,8 +269,8 @@ class FindWandRoom(LootRoom):
         '''
 
 class FindStaffRoom(LootRoom):
-    def __init__(self, x, y):
-        super().__init__(x, y, items.Staff())
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, items.Staff())
 
     def call_intro(self):
         return '''
@@ -292,8 +279,8 @@ class FindStaffRoom(LootRoom):
         '''
 
 class FindKeyRoom(LootRoom):
-    def __init__(self, x, y, key_address_code):
-        super().__init__(x, y, items.Key(key_address_code))
+    def __init__(self, x, y, name, key_address_code):
+        super().__init__(x, y, name, items.Key(key_address_code))
 
     def call_intro(self):
         return '''
@@ -302,11 +289,11 @@ class FindKeyRoom(LootRoom):
         '''
 
 class FindRabbitFootRoom(LootRoom):
-    def __init__(self, x, y):
+    def __init__(self, x, y, name):
         self.hp_list = [25,50,75]
         self.lucky_dic = {25:'little',50:'very',75:'super'}
         self.res_hp = random.choice(self.hp_list)
-        super().__init__(x, y, items.RabbitFoot(self.res_hp))
+        super().__init__(x, y, name, items.RabbitFoot(self.res_hp))
 
     def call_intro(self):
         return '''
@@ -315,8 +302,8 @@ class FindRabbitFootRoom(LootRoom):
         '''.format(self.lucky_dic[self.res_hp])
 
 class ScorpionRoom(EnemyRoom):
-    def __init__(self, x, y):
-        super().__init__(x, y, enemies.Scorpion())
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, enemies.Scorpion())
 
     def intro_text(self):
         if self.enemy.is_alive():
@@ -330,8 +317,8 @@ class ScorpionRoom(EnemyRoom):
             '''
 
 class BanditRoom(EnemyRoom):
-    def __init__(self, x, y):
-        super().__init__(x, y, enemies.Bandit())
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, enemies.Bandit())
 
     def intro_text(self):
         if self.enemy.is_alive():
@@ -345,8 +332,8 @@ class BanditRoom(EnemyRoom):
 
 
 class RetiredMageRoom(EnemyRoom):
-    def __init__(self, x, y):
-        super().__init__(x, y, enemies.RetiredMage())
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, enemies.RetiredMage())
 
     def intro_text(self):
         if self.enemy.is_alive():
@@ -360,28 +347,24 @@ class RetiredMageRoom(EnemyRoom):
             '''
 
 class GandalphRoom(EnemyRoom):
-    def __init__(self, x, y):
-        super().__init__(x, y, enemies.Gandalph())
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, enemies.Gandalph())
+        self.engage_actions = [actions.Eat(), actions.Attack(enemy=self.enemy)]
+        #self.engage_actions.remove(actions.Flee(tile=self))  # cannot flee in front of Gandalph!
 
     def intro_text(self):
         if self.enemy.is_alive():
             return '''
-            {}: YOU SHALL NOT PASS!!!!!!!
+            {}: \033[31mYOU SHALL NOT PASS!!!!!!!\033[0m
             '''.format(self.enemy.name)
         else:
             return '''
             Only a trace of unknown sparkle remained.
             '''
 
-    def available_actions(self):
-        if self.enemy.is_alive():
-            return [actions.Attack(enemy=self.enemy), actions.Eat()]  # cannot flee in front of Gandalph!
-        else:
-            return self.adjacent_moves()+self.peaceful_state_actions
-
 class HarryPotterRoom(EnemyRoom):
-    def __init__(self, x, y):
-        super().__init__(x, y, enemies.HarryPotter())
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, enemies.HarryPotter())
 
     def intro_text(self):
         if self.enemy.is_alive():
@@ -394,10 +377,10 @@ class HarryPotterRoom(EnemyRoom):
             '''
 
 class GoldRoom(LootRoom):
-    def __init__(self, x, y):
+    def __init__(self, x, y, name):
         gold_room_currencies= [10,25,50]
         self.amount = random.choice(gold_room_currencies)
-        super().__init__(x, y, items.Gold(self.amount))
+        super().__init__(x, y, name, items.Gold(self.amount))
 
     def call_intro(self):
         return '''
@@ -407,16 +390,20 @@ class GoldRoom(LootRoom):
 
 
 class MemoryRoom(MapTile):
+    def __init__(self, x, y, name):
+        self.memory = memories.memory[memories.story.get_number()]
+        memories.story.inc_number()
+        super().__init__(x, y, name)
+
     def intro_text(self):
         if not self._visited:
             self._visited = True
-            memories.number+=1
             return '''
-            
-            '''.format(memories.memory[memories.number])
+            {}
+            '''.format(self.memory)
 
         return '''
-        This place reminds me of my memories...
+        \033[35mThis place reminds me of my memories...\033[0m
         '''
 
     def modify_player(self, player):
