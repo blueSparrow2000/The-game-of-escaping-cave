@@ -24,14 +24,22 @@ def play():
     tut = None # tutorial을 여기다 심을거다
     setting = initial_setting.Setting()
     player_name = setting.get_player_name()
+    selected_mode = setting.get_game_mode()
     map_name = setting.get_map_name()
 
     if map_name == 'tutorial':
         tut = tutorial.Tutorial()
         tut.ask_language()
 
-    playerminimap = world.load_tiles(map_name) # Player의 starting position이 정해짐!
-    player = Player(player_name)  #player의 starting position을 먼저 정하고 나서 player를 만들어야 한다! 주의!
+    map_reveal = False
+    if map_name == 'room_tester':
+        map_reveal = True
+
+    playerminimap = world.load_tiles(map_name, mode = selected_mode, reveal = map_reveal) # Player의 starting position이 정해짐!
+    player = Player(player_name,playerminimap)  #player의 starting position을 먼저 정하고 나서 player를 만들어야 한다! 주의!
+
+    if selected_mode =='Easy':
+        player.give(items.RabbitFoot(50))
 
     setting.set_player_level(player)
 
@@ -44,10 +52,7 @@ def play():
 
     # tutorial - introduction
     if map_name == 'tutorial':
-        player.give(items.Bow(), items.Arrow(), items.Wand())
         tut.intro(player)
-        playerminimap.load(player.location_x, player.location_y)
-        tut.key_input()
     else:
         print(room.intro_text())
 
