@@ -15,10 +15,11 @@ class Item():
 
 class RabbitFoot(Item):
     def __init__(self, resurrection_hp):
-        self.resurrection_hp = resurrection_hp
+        self.resurrection_hp= resurrection_hp
+        val = 100+self.resurrection_hp
         super().__init__(name='\033[46mRabbit foot\033[0m',
                          description="It feels like something lucky☆ is gonna happen!",
-                         value=100+resurrection_hp)
+                         value=val)
 
 class Gold(Item):
     def __init__(self, amt):
@@ -189,14 +190,14 @@ class Staff(Magical):
     def __init__(self):
         self.type = choose_type()
         super().__init__(name='\033[95mMage Staff\033[0m', description="A staff used by licensed wizards. It is advanced type of a wand.\nThis staff is a {} type.".format(self.type),
-                         value=50, damage=30 ,damage_deviation=24, ammoname = None, lvrestriction=6)
+                         value=200, damage=30 ,damage_deviation=24, ammoname = None, lvrestriction=6)
         type_initializer(self,self.type)
 
 class Scepter(Magical):
     def __init__(self):
         super().__init__(name='\033[95mScepter\033[0m',
                          description="Long stick.",
-                         value=50, damage=100, damage_deviation=0, ammoname=None, lvrestriction=20)
+                         value=500, damage=100, damage_deviation=0, ammoname=None, lvrestriction=20)
 ################################################################################################### Shootable
 
 class Shootable(Weapon):  # Weapon that needs ammo
