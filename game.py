@@ -1,4 +1,4 @@
-import world, actions, util
+import world, actions, util, story_info
 from player import Player
 import initial_setting
 import tutorial
@@ -17,7 +17,7 @@ print('''
 - Tutorial is now ready! (It's just long lines of texts though... yet...)
 - Memory room update coming soon... (story mode)
 =================================================================================================================
-''')#
+''')
 
 def play():
     # Initial setting
@@ -31,9 +31,7 @@ def play():
         tut = tutorial.Tutorial()
         tut.ask_language()
 
-    map_reveal = False
-    if map_name == 'room_tester':
-        map_reveal = True
+    map_reveal = setting.get_minimap_visibility(map_name, selected_mode)
 
     playerminimap = world.load_tiles(map_name, mode = selected_mode, reveal = map_reveal) # Player의 starting position이 정해짐!
     player = Player(player_name,playerminimap)  #player의 starting position을 먼저 정하고 나서 player를 만들어야 한다! 주의!
@@ -45,7 +43,7 @@ def play():
 
     print('='*70,'\n','''
     setting complete!
-    ''','\n','='*70,'\n')
+    ''','\n','='*70)
 
     # These lines load the starting room and display the text
     room = world.tile_exists(player.location_x, player.location_y)
@@ -54,17 +52,18 @@ def play():
     if map_name == 'tutorial':
         tut.intro(player)
     else:
-        print(room.intro_text())
+        player.show_minimap()
+        room.intro(player)
 
     last_action = actions.EnterCave()
-    while player.is_alive() and not player.victory:
-        # Find what room player is in, and execute the room's behavior
-        room = world.tile_exists(player.location_x, player.location_y)
-        room.modify_player(player)
+    last_location = player.get_location()
 
-        # Check again since the room could have changed the player's state
-        if actions.check_movement(last_action):  # player가 움직임(started game/flee/move)을 선택했다면 minimap을 보여주도록 함!
-            playerminimap.load(player.location_x, player.location_y)  # minimap - 나중에 아직 들리지 않은 방은 가려두는 기능 추가하기
+    while player.is_alive() and not player.victory:
+        # Find what room player is in
+        room = world.tile_exists(player.location_x, player.location_y)
+
+        # Execute the room's behavior
+        room.modify_player(player)
 
         if player.is_alive() and not player.victory:
             # Choosing action
@@ -73,7 +72,6 @@ def play():
             for action in available_actions:
                 print(action)
             available_hotkeys = [action.hotkey for action in available_actions]
-            print()
             print('=' * 70)
             action_input = input('Action: ')
             print('=' * 70)
@@ -90,7 +88,19 @@ def play():
                     last_action = action
                     break
 
-            playerminimap.update(player.location_x, player.location_y)
+            # Check again since the room could have changed the player's state & print the minimap
+            # if actions.check_movement(last_action):  # player가 움직임(started game/flee/move)을 선택했다면 minimap을 보여주도록 함!
+            #     playerminimap.update(player.location_x, player.location_y)
+            #     player.show_minimap()
+
+            current_location = player.get_location()
+            if last_location != current_location: # 플레이어가 실제로 움직였을때
+                last_location = current_location
+                playerminimap.update(player.location_x, player.location_y) # 위치가 바뀌었을 때 미니맵을 보여줘야지.
+                player.show_minimap()
+                standing_tile = world.tile_exists(player.location_x, player.location_y)
+                if standing_tile: # None이 리턴될 리는 없다. available action만 가능하기 때문에. 그래도 혹시나 해서 넣음. 필요없으면 제거!
+                    standing_tile.intro(player) # 방에 방금 들어왔을 때만 intro를 해야함. (intro는 방에 처음 들어갔을때 실행되는 것임. modify는 방에 있으면 지속적으로 할수도 있음)
 
     if not player.is_alive():
         print("\n","="*70,"\n","="*70,"\nYou died... ㅠㅠ")
