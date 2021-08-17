@@ -29,7 +29,7 @@ class Gold(Item):
 
 class Key(Item):
     def __init__(self, address_code):
-        self.address_code = address_code
+        self.address_code = address_code # This is a string with 4 digit number! EX: '0000'
         super().__init__(name='\033[90m{}\033[0m'.format('Key'), description='A key that can open a door somewhere. {} stamped on the back.'.format(self.address_code), value=100)
 
     def can_open(self,locked_state):
@@ -44,13 +44,12 @@ class Junk(Item):
 
 class ScorpionSting(Junk):
     def __init__(self):
-        super().__init__(name='Scorpion sting', description='Very sharp sting. Not poisonous!', value=2)
+        super().__init__(name='Scorpion sting', description='Very sharp sting. Not poisonous!', value=10)
 
 
 class Bone(Junk):
     def __init__(self):
         super().__init__(name='Bone', description='... Whoes was this...?', value=1)
-
 
 ################################################################################## Food
 
@@ -70,7 +69,8 @@ class XpOrb(Food):
     def __init__(self,xp):
         self.contained_xp = xp
         value_calc = xp*2
-        super().__init__(name='XP Orb', description='Glowing light green crystal.', value=value_calc, healamt=0)
+        designation = 'XP Orb: {} ml'.format(self.contained_xp)
+        super().__init__(name=designation, description='Glowing light green crystal.', value=value_calc, healamt=0)
 
     def __str__(self):
         return "{}\n=====\n{}\nValue: {}\nXP amount: {}".format(self.name, self.description,
@@ -126,7 +126,7 @@ class Weapon(Item):
 
 class Rock(Weapon):
     def __init__(self):
-        super().__init__(name='Rock', description='A fist-sized rock, suitable for bludgeoning.', value=0, damage=2,damage_deviation=1)
+        super().__init__(name='Rock', description='A fist-sized rock, suitable for bludgeoning.', value=1, damage=2,damage_deviation=1)
 
 
 class Dagger(Weapon):
@@ -136,10 +136,11 @@ class Dagger(Weapon):
                          damage=4,damage_deviation=2, lvrestriction=1)
 
 class Shield(Weapon):
-    def __init__(self):
+    def __init__(self,def_mul):
         luck = math.ceil(random.uniform(0, 5))
-        super().__init__(name='\033[36mShield\033[0m', description="Have you ever heard of a shield warrior? If in inventory, reduces 20% of the damage.",
+        super().__init__(name='\033[36mShield\033[0m', description="Have you ever heard of a Shield warrior? He attacks with his shield! If in inventory, reduces {}% of the damage. \nNOTE: Effect does not stack. If there are more than one shield, maximum defence multiplier is used.".format(round(def_mul*100,0)),
                          value=50 + luck*2, damage=(5 + luck), damage_deviation=2,ammoname = None,lvrestriction=1)
+        self.defence_mul = def_mul
 
 
 ################################################################################################### Weapons that uses magic
@@ -182,7 +183,7 @@ def choose_type():
 class Wand(Magical):
     def __init__(self):
         self.type = choose_type()
-        super().__init__(name='\033[95mBasic Wand\033[0m', description="A long stick that helps casting spells. Don't expect too much.\nThis wand is a {} type.".format(self.type),
+        super().__init__(name='\033[95mBasic Wand\033[0m', description="A long stick that helps casting spells. \nThis wand is a {} type.".format(self.type),
                          value=50, damage=16 ,damage_deviation=12,ammoname = None, lvrestriction=3)
         type_initializer(self,self.type)
 
@@ -207,7 +208,7 @@ class Shootable(Weapon):  # Weapon that needs ammo
 class Bow(Shootable):  # need arrow to use. Consumes arrow
     def __init__(self):
         luck = math.ceil(random.uniform(0, 10))
-        super().__init__(name='Bow', description="A compound bow. There is no sound of the bow string being pulled.",
+        super().__init__(name='Bow', description="A compound bow. There is no sound of the bow string being pulled. \nNOTE: You need an arrow to use this bow.",
                          value=50 + luck, damage=(10 + luck),damage_deviation=4, ammoname = 'Arrow', lvrestriction=2)
 
 class Ammo(Item):
