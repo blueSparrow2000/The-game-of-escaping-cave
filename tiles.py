@@ -1,5 +1,5 @@
 import random
-import items, enemies, npcs, actions, world, util, memories
+import items, enemies, npcs, actions, world, util, story_info
 
 '''
 Possible actions of the player are determined by tiles!
@@ -23,6 +23,10 @@ class MapTile:  # abstract class
         self.locked_state = ''  # '' means no key needed. Other values is password (each key has that corresponding value) to enter the tile.
         self.peaceful_state_actions = [actions.ViewInventory(),actions.ViewStatus(),actions.ViewMobpedia(),actions.ViewMinimap(),actions.Eat()]
 
+    def intro(self,player):
+        print(self.intro_text())
+        print('=' * 70)
+
     def intro_text(self):
         raise NotImplementedError()
 
@@ -45,12 +49,14 @@ class MapTile:  # abstract class
     def available_actions(self):
         return self.adjacent_moves()+self.peaceful_state_actions
 
+    def get_pos(self):
+        return (self.x,self.y)
 
 class EnemyRoom(MapTile):  # abstract class
     def __init__(self, x, y, name, enemy):
         self.enemy = enemy
         super().__init__(x, y,name)
-        self.engage_actions = [actions.Eat(), actions.Flee(tile=self), actions.Attack(enemy=self.enemy)]
+        self.engage_actions = [actions.Eat(), actions.Flee(tile=self), actions.Attack(enemy=self.enemy),actions.AttackPreviousOption(enemy=self.enemy)]
 
     def modify_player(self, the_player):
         self.engage(the_player)
@@ -67,12 +73,14 @@ class EnemyRoom(MapTile):  # abstract class
             if self.enemy.skills == 0 or skill_no == 0:
                 if the_player.take_damage(self.enemy.damage):
                     print("Enemy does {} damage.\n{} HP: \033[91m{}\033[0m".format(round(self.enemy.damage,1),the_player.name ,round(the_player.hp,1)))
+
             else:
                 skill = getattr(self.enemy, self.enemy.skill_list[skill_no - 1].__name__)
                 skill(the_player)
 
             if not the_player.is_alive():
                 the_player.resurrection_check()
+            print('=' * 70)
 
     def available_actions(self):
         if self.enemy.is_alive():
@@ -84,7 +92,8 @@ class NPCRoom(EnemyRoom):  # abstract class
     def __init__(self, x, y, name, npc):
         self.attacked = False
         super().__init__(x, y, name, npc)
-        self.npc_actions = [actions.Flee(tile=self), actions.Attack(enemy=self.enemy), actions.Talk(npc=self.enemy)]
+        # 'actions.Eat()를 제외한 engage actions' + 'talk,sell' 이다.
+        self.npc_actions = [actions.Attack(enemy=self.enemy),actions.AttackPreviousOption(enemy=self.enemy), actions.Talk(npc=self.enemy), actions.Sell(npc=self.enemy)]
 
     def add_to_mob_list(self,the_player):
         on_the_list = False
@@ -95,19 +104,24 @@ class NPCRoom(EnemyRoom):  # abstract class
             the_player.viewed_mobs.append(self.enemy)
 
     def modify_player(self, the_player):
-        self.attacked = self.enemy.is_attacked() # attacked check
+        if not self.attacked:  # 스스로가 공격당하지 않았다고 생각한다면 체크하기
+            self.attacked = self.enemy.is_attacked() # attacked check
+
         self.add_to_mob_list(the_player)
         if self.attacked and self.enemy.is_alive():
             self.engage(the_player)
-        else:
+        elif self.enemy.is_alive():
             self.interact(the_player)
+        else:
+            pass
 
     def interact(self,the_player):
         pass
 
-
     def available_actions(self):
-        self.attacked = self.enemy.is_attacked() # attacked check
+        if not self.attacked:
+            self.attacked = self.enemy.is_attacked() # attacked check
+
         if self.enemy.is_alive():
             if self.attacked:
                 return self.engage_actions
@@ -166,6 +180,51 @@ class WandererRoom(NPCRoom):  # merchant has trades
             Only traces of murder remained...
             '''
 
+class GuardRoom(NPCRoom):
+    def __init__(self, x, y, name):
+        super().__init__(x, y, name, npcs.Guard())
+        self.engage_actions = [actions.Eat(), actions.Attack(enemy=self.enemy),actions.AttackPreviousOption(enemy=self.enemy)] # no flee option
+
+    def intro_text(self):
+        if self.enemy.is_alive():
+            if not self._visited:
+                self._visited = True
+                return '''
+                It is very quiet here.
+                A man is standing in the distance.
+                '''
+            elif self.attacked:
+                return '''
+                {}: I WON'T let you flee.
+                '''.format(self.name)
+            else:
+                return '''
+                It is still very quiet here.
+                '''
+        else:
+            return '''
+            Only traces of murder remained...
+            '''
+
+    def interact(self,player):
+        if self.scan_player(player):
+            self.engage(player)  # attack!
+
+    def scan_player(self,player):
+        inventory = player.inventory
+        for i in inventory:
+            if isinstance(i,items.Key):
+                if i.address_code=='0000':  # If player has the '0000' key! This is the most basic key that is directly related to escaping the cave!
+                    self.enemy.revealed()
+                    self.attacked = True
+                    print('''
+                {}: Something is glistering from you... 
+                
+                HALT. 
+                You have something you shouldn't have.
+                    '''.format(self.enemy.name))
+                    return True
+        return False
 
 class StartingRoom(MapTile):
     def intro_text(self):
@@ -230,7 +289,7 @@ class LootRoom(MapTile):  # abstract class
         super().__init__(x, y,name)
 
     def add_loot(self, player):
-        player.inventory.append(self.item)
+        player.give(self.item)
 
     def modify_player(self, player):
         if not self._visited:
@@ -349,8 +408,7 @@ class RetiredMageRoom(EnemyRoom):
 class GandalphRoom(EnemyRoom):
     def __init__(self, x, y, name):
         super().__init__(x, y, name, enemies.Gandalph())
-        self.engage_actions = [actions.Eat(), actions.Attack(enemy=self.enemy)]
-        #self.engage_actions.remove(actions.Flee(tile=self))  # cannot flee in front of Gandalph!
+        self.engage_actions = [actions.Eat(), actions.Attack(enemy=self.enemy),actions.AttackPreviousOption(enemy=self.enemy)] # cannot flee in front of Gandalph!
 
     def intro_text(self):
         if self.enemy.is_alive():
@@ -376,6 +434,7 @@ class HarryPotterRoom(EnemyRoom):
             Only a trace of unknown sparkle remained.
             '''
 
+
 class GoldRoom(LootRoom):
     def __init__(self, x, y, name):
         gold_room_currencies= [10,25,50]
@@ -389,15 +448,102 @@ class GoldRoom(LootRoom):
         '''.format(self.amount)
 
 
-class MemoryRoom(MapTile):
-    def __init__(self, x, y, name):
-        self.memory = memories.memory[memories.story.get_number()]
-        memories.story.inc_number()
-        super().__init__(x, y, name)
+####################################################################################### In progress...
+# story mode용 업데이트
+
+class JumpRoom(MapTile):
+    def __init__(self, x, y, name, world):
+        self.world = world
+        self.jump_code = '' # default로 ''
+        super().__init__(x, y,name)
+
+    def intro(self,player):
+        print(self.intro_text())
+        # teleportation
+        self.teleport_player(player)
+        player.player_minimap.update(player.location_x, player.location_y)
+        print('''
+        Wooooooosh!
+        ''')
+        player.show_minimap()
+
 
     def intro_text(self):
+        word = "Still the same. But I'm used to it now..."
         if not self._visited:
             self._visited = True
+            sickness_words = ["I feel like throwing up...","Dizzy. Eyes are blurry...","Somebody save me..!"]
+            word = random.choice(sickness_words)
+        return '''
+        {}
+        '''.format(word)
+
+    def check_code(self,other_jump_code):
+        return self.jump_code == other_jump_code
+
+    def teleport_player(self, player):
+        # search through the tiles and find the tile that is of the same jump code!
+        # then, teleport the player to that location!
+        # What an amazing tile!
+        world_list = list(self.world.values())
+        for tile in world_list:
+            if tile and tile.name=='JumpedRoom': # tile != None 이고, self.name = refined name 이므로 refined name을 비교하면 된다.
+                if self.check_code(tile.jump_code):
+                    tile.update_jump()
+                    x_pos,y_pos = tile.get_pos()
+                    player.force_location(x_pos,y_pos)
+
+    def modify_player(self, player):
+        pass
+
+class JumpedRoom(MapTile):
+    def __init__(self, x, y, name):
+        self.world = world
+        self.jump_code = '' # default로 ''
+        self.jumped = False
+        super().__init__(x, y,name)
+
+    def jump_check(self):
+        if self.jumped:
+            self.jumped = False
+            return True
+        return False
+
+    def update_jump(self):
+        self.jumped = True
+
+    def intro_text(self):
+        word = "What is this place?"
+        return '''
+        {}
+        '''.format(word)
+
+    def modify_player(self, player):
+        if self.jump_check():
+            word = "Ouch... another crash landing."
+            if not self._visited:
+                self._visited = True
+                sickness_words = ["Ahhh... Where am I?","What happened...?","Did I teleported..?"]
+                word = random.choice(sickness_words)
+            print('''
+            {}
+            '''.format(word))
+            print('='*70)
+        else:
+            pass
+
+
+class MemoryRoom(MapTile):  # 스토리와 함께 구현할 것임. jump가 먼저.
+    def __init__(self, x, y, name):
+        self.memory = story_info.memory[story_info.story.get_number()]
+        self.last_shown_memory = story_info.story.get_number()
+        super().__init__(x, y, name)
+
+    def condition(self):
+        pass
+
+    def intro_text(self):
+        if self.condition():
             return '''
             {}
             '''.format(self.memory)
@@ -409,4 +555,3 @@ class MemoryRoom(MapTile):
     def modify_player(self, player):
         # Room has no action on player
         pass
-
