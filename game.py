@@ -20,17 +20,18 @@ print('''
 =================================================================================================================
 ''')
 
-def play():
+def play(language,player_name):
     # Initial setting
     tut = None # tutorial을 여기다 심을거다
     setting = initial_setting.Setting()
-    player_name = setting.get_player_name()
+
+    # ask questions 1,2
     selected_mode = setting.get_game_mode()
     map_name = setting.get_map_name()
 
     if map_name == 'tutorial':
         tut = tutorial.Tutorial()
-        tut.ask_language()
+        tut.set_language(language)
 
     map_reveal = setting.get_minimap_visibility(map_name, selected_mode)
 
@@ -39,16 +40,18 @@ def play():
 
     setting.give_items_corresponding_to_mode(player, mode = selected_mode)
 
+    # ask questions 3
     setting.set_player_level(player)
 
     # story mode setting!
     story_bot = story_info.EmptyBot(player)
     if map_name == 'prison':
         story_bot = story_info.PrisonStoryBot(player)
+        story_bot.set_language(language)
         story_bot.turn_on()
 
     print('='*70,'\n','''
-    setting complete!
+    Setting complete!
     ''','\n','='*70)
 
     # These lines load the starting room and display the text
@@ -115,7 +118,9 @@ def play():
             print("\n", "=" * 70, "\nCongratulations! '{}' has escaped the {}!".format(player.name+player.title,map_name),"\n", "=" * 70)
 
 if __name__ == "__main__":
+    language = util.ask_language()
+    player_name = util.get_player_name()
     while 1:
-        play()
+        play(language,player_name)
         if util.ask_player('Play again?', ['Y', 'N']) == 'N':
             break
