@@ -325,21 +325,23 @@ My head hurts. I feel my mana and soul fluctuating...
 I'll just have to find an exit first!
 
 /[When you have reached the cave exit, but have not exited and come to the memory tile]
-Oh...
-I was exiled to this cave.
-It must be difficult to atone for here, as I can always leave here... 
-
-... because I killed all the guards!
-
-I must have lost my memory when I fell into this cave prison.
-First things first, I should get out this cave...
-
-/[True end: Escape from the cave]
 
 W A I T.
 
 Wait a moment.
+Let me think before I get out of this prison.
 
+I was exiled to this cave prison.
+It must be difficult to atone for me here, as I can always leave the prison... 
+
+... because I killed all the guards!
+
+I must have lost my memory when I fell into this cave prison.
+I have to demand people outside to confine me to a prison from which it is more difficult to escape..!
+
+First things first, I should get out this cave...
+
+/[True end: Escape from the cave]
 I was supposed to stay inside this cave prison because of my guilt.
 I had to atone for it as a life sentence.
 In the past, I caused a catastrophe that could not be stopped even if all the wizards in the world cooperate with each other.
@@ -359,7 +361,7 @@ Please.
 
 - True ending
 
-(Next story - after getting out of the prison - comming soon!)
+(Next story - going to more 'advanced' prison, and loses memory once again - comming soon!)
 
 /[Bad end: Escape from the cave without progressing enough]
 Whoa... Escape!
