@@ -107,6 +107,7 @@ class Player:
         else:
             return item_list
 
+
     def find_item_and_value_with_maximum_property(self, item_list, property):
         max = 0
         item = None
