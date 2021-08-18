@@ -13,7 +13,7 @@ Guest login(q를 눌렀을때)을 제외하면 로그인 업데이트 해줘야�
 '''
 from datetime import datetime
 import re, os, sys
-import util
+import util, initial_setting
 
 ######################   Some important global variables   ####################
 # user 정보가 저장된 폴더
@@ -53,7 +53,7 @@ def pattern_finder(input_string, pattern): # Returns start position of such patt
 
 def get_player_name(): # returns player name & update login info
     global default_user_name
-    name = input('\033[91m{}\033[0m'.format("Enter player's name (if you don't know what to do or you want to play as a guest, press 'Enter' or press 'q'): "))
+    name = input('\033[91m{}\033[0m'.format("Enter player's Name. DO NOT USE ':' in your name. (if you don't know what to do or you want to play as a guest, press 'Enter' or press 'q'): "))
     name = name.strip()
     if name and name!='q':
         if name != default_user_name:  # Normal name을 입력했을시
@@ -208,22 +208,28 @@ def title_refiner(title): # 모든 타이틀(title)은 ' \033[ddm{}\033[0m'이�
         fully_refined_title = fully_refined_title + ' the' + refined_title
     return fully_refined_title
 
-def score_calculator(mode,map,handicap,is_victorious, title):
-    return 0
-
+def score_calculator(setting,is_victorious, title):
+    score = 0
+    if is_victorious:
+        setting_score = setting.get_setting_score()
+        title = title_refiner(title)
+        killer_title = 0
+        if 'Scorpion killer' in title:
+            killer_title  += 1
+        title_collecting_score = (len(title.split(' the')) - 1) - killer_title*2
+        score = round(setting_score + title_collecting_score,1)
+    return score
 
 def check_guest(name):
     if name == 'Cave Runner':
         return True
     return False
 
-def update_user_info(name, mode,map,handicap,is_victorious, title): # What title he got when he successfully escaped the cave (and what mode, what map he played, how much handicap)
+def update_user_info(name, mode,map,handicap,is_victorious, title,score): # What title he got when he successfully escaped the cave (and what mode, what map he played, how much handicap)
     # write down all informations and score
-    score = score_calculator(mode,map,handicap,is_victorious, title)
     if not check_guest(name):
         update_user_activity(name, mode, map, handicap, is_victorious, title,score)
         update_leader_board(name,score)
-    pass
 
 
 ########################################################## leader board
@@ -232,13 +238,14 @@ def update_leader_board(name,score):
     leader_board_folder = user_forder
     new_record = (name,score)
     data = []
+
     with open("%sleader_board.txt"%leader_board_folder, "r") as f:
         lines = f.readlines()
         for line in lines:
             split_idx = pattern_finder(line,'\t')
             if split_idx: # 있다면!
                 name = line[0:split_idx]
-                score = int(line[split_idx+1:].strip())
+                score = round(float(line[split_idx+1:].strip()),1)
                 data.append((name,score))
         data.append(new_record)  # 새로운 데이터 추가
         data = sorted(data, key=lambda entry: entry[1],reverse=True)
