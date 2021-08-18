@@ -28,6 +28,10 @@ class EmptyBot:
     def __init__(self, player):
         self.player = player
         self.turned_on = False
+        self.language = 'English' # default
+
+    def set_language(self,lang):
+        self.language = lang
 
     def turn_on(self):
         self.turned_on = True
@@ -67,12 +71,15 @@ class PrisonStoryBot(EmptyBot):
 
         self.player_MagicAffinity_level = 0
         self.next_story = ''
-        global script
+        super().__init__(player = player)
+
+        global scripts
+        script = scripts[self.language]
         self.story_lines = listify_story(script)
         ###########################################  'end:' 라는 패턴으로 엔딩을 저장해두었을 때 아래처럼 엔딩의 개수를 구할 수 있다.
         self.ending_numbers = get_ending_numbers(script)
         ###########################################
-        super().__init__(player = player)
+
 
 
     def progress_to_next_story(self):  # story method를 실행한 뒤에 해줄것 - 아직 분기점은 없기에 한 progress만 있으면 충분
@@ -142,7 +149,7 @@ class PrisonStoryBot(EmptyBot):
     # player에게 직접적으로 영향을 주는 - 화면에 대사를 띄우는 - 유일한 함수! turned_on일때만 실행함
     def show_story(self):  # game.py에다가 room.intro한 직후에 항상 실행시켜둘 함수. 이게 뭔가 인자를 받으면, tile.intro() 바로 뒤에 실행한다.
         if self.turned_on and self.next_story != '':
-            print('''"{}: {}"'''.format(self.player.name, self.next_story))
+            print('''{}: "{}"'''.format(self.player.name, self.next_story))
             print('='*70)
             self.erase_story() # initialize
 
@@ -205,8 +212,10 @@ class PrisonStoryBot(EmptyBot):
         self.show_story()
         self.turn_off()
 
+        return True
 
-script = '''[시작의 방에 처음으로 돌아왔을 때]
+
+scripts = {'Korean':'''[시작의 방에 처음으로 돌아왔을 때]
 지금 보니 내 왼팔에 검은 문신이 있다.
 수직으로 내려 꼳힌 막대에 두 개의 작은 막대가 가로지르고 있다.
 마치 십자가에 가로로 하나의 작대기가 더 있는 모양이었다.
@@ -222,7 +231,7 @@ script = '''[시작의 방에 처음으로 돌아왔을 때]
 으. 머리가 깨질 것 같다.
 
 /[charming type Magical weapon를 얻거나 발견한 적이 있을 때] 
-『매혹적인』타입! 그거였어. 내가 연구하던게.
+『charming』타입! 그거였어. 내가 연구하던게.
 근데.. 그게 뭐하는 거였지?
 
 아, 그래! 세상의 균형을 지키는 네 가지 타입이 있었다.
@@ -234,42 +243,123 @@ script = '''[시작의 방에 처음으로 돌아왔을 때]
 그러나 나는 그만한 마력(혼)이 없었다.
 그래서 그 대신 마법 연구를 통해 더욱 강력하고 이로운 마법을 만들고 싶었다.
 
+그래서 나는 마력을 더 증폭시켜야 한다...
+
 /[Magic affinity가 max level인 상태로 메모리 타일에 도달]
 기억이 날듯 말듯하다.
+
+일단 출구를 찾아야겠다!
 
 /[동굴 출구에 도달한 적이 있으나, 나가지 않고 메모리 타일로 왔을 때]
 아...
 내가 이 동굴에 유배당한 거구나.
+여기서 언제든지 나갈 수 있으니 여기서 속죄하기는 힘들겠네...
+내가 이 동굴 감옥에 떨어질때 기억을 잃었었나 보군.
+
+이제 그만 나가자...
 
 /[True end: 동굴에서 탈출한다]
-나는 세상에 나가서는 안되는 존재였다. 
-내가 한 일은 세상의 모든 마법사들이 힘을 합쳐도 막을 수 없는 대재앙을 일으킨 것이었다.
-charming속성은 마법사의 마음을 병들게 만든다. 
+나는 원래 동굴 감옥 밖의 세상으로 나가서는 안되는 존재였다. 
+종신형으로써 속죄해야 했다.
+나는 과거에 세상의 모든 마법사들이 힘을 합쳐도 막을 수 없는 대재앙을 일으켰다.
+『charming』은 마법사들의 마음을 병들게 만든다. 
 모든 것을 착각하게 만든다. 
-내가 죽였던 것은... 단순한 상상속 도적이나 마법사 따위가 아니다...
+나도 예외가 아니었다.
+
+내가 죽였던 것은... 단순한 상상속 도적이나 마법사, 경비병 따위가 아니라...
+
 살아있는 생명체였다.
 
-내가 이렇게나 쉽게 생명을 해한 것을 보면, 동굴 감옥에 오기 전에도 여러번 생명을 해한적이 있었을 것이다.
+내가 이렇게나 쉽게 생명을 해한 것을 보면, 동굴 감옥에 오기 전에도 여러 생명을 해한 적이 있었을 것이다.
 그러니 동굴을 나가면 나의 죄를 속죄해야 한다.
 
 부디 나에게 더 강한 처벌을 내려 주소서...  
 
+- True ending
+
 /[Bad end: progress 수치가 충분히 오르지 않은 상태에서 동굴에서 탈출]
 후후... 탈출이다! 
 이제 나를 막는건 아무것도 없어!!!
-'''
 
-script_eng = '''
+- Bad ending
+''',
+
+'English':'''[First revisit on StartingRoom]
 I see now that I have a black tattoo on my left arm.
 Two small bars intersect with a vertically slanted bar.
 It is in the form of one more horizontal bar drawn on the cross.
 What kind of person I was..? I can't quite remember...
-/
-I fell and my shoes came off.
-My feet still sting, so I tried to look at his feet and realized I wasn't wearing socks. That was the reason my feet sting... Huh?
-I don't have one toe...
-/
-Finally an escape!
+
+/[Get on the MemoryRoom for the first time]
+I fell and one of my shoe came off.
+My feet still itches, so I looked at my feet and realized I wasn't wearing socks. 
+That was the reason my feet stinging... 
+
+Huh?
+
+I don't have a toe...
+
+/[acquire or discover a magical weapon - immediately after]
+Ah... I have seen this kind of wand before. I was a magic engineer.
+Eww. My head feels like it's going to break...
+
+/[When you have acquired or discovered a charming type Magical weapon]
+The 『charming』 type! That was what i was researching, dedicating my life.
+But, what was my goal?
+
+Oh yeah! There were four magical 'types' that kept the world in balance.
+I think the subject of my research was to find out what 『charming』 type means.
+
+/[when killed HarryPotter or Gandalph]
+I wanted to be like Harry Potter or the Gundalf.
+I wanted to use magic to protect people, and make them happy.
+But I didn't have enough mana and soul.
+So instead, I wanted to make a powerful and beneficial magic through magic research.
+
+I need to amplify my magic affinity even more...
+
+/[Reach memory tile with magic affinity at max level]
+My head hurts. I feel my mana and soul fluctuating...
+
+I'll just have to find an exit first!
+
+/[When you have reached the cave exit, but have not exited and come to the memory tile]
+Oh...
+I was exiled to this cave.
+It must be difficult to atone for here, as I can always leave here... 
+
+I killed all the guards :( 
+
+I must have lost my memory when I fell into this cave prison.
+First things first, I should get out this cave...
+
+/[True end: Escape from the cave]
+I was supposed to stay inside this cave prison because of my guilt.
+I had to atone for it as a life sentence.
+In the past, I caused a catastrophe that could not be stopped even if all the wizards in the world cooperate with each other.
+『Charming』 makes wizards sick...
+
+... makes everything delusional.
+I was no exception.
+
+What I killed... wasn't just an imaginary thief, a wizard, a guard...
+It was a living creature.
+Seeing that I have harmed life so easily, I must have done the same thing multiple times before I came to this prison.
+So when I leave the cave, I must atone for my sins.
+
+Please give me a stronger punishment...
+
+- True ending
+
+/[Bad end: Escape from the cave without progressing enough]
+Whoa... Escape!
+
+Fresh air!
+
+Nothing can stop me now!!!
+
+- Bad ending
 '''
+           }
 
 
