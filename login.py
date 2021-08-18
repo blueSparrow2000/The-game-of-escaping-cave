@@ -270,13 +270,11 @@ def get_leader_board(n): # get top 'n' scores of the players list!
 def show_leader_board(n=10):
     top = get_leader_board(n)
     print("="*20,"☨","leader board of all time","☨","="*20)
+
     for k in range(len(top)):
-        print('{}{} place: {}'.format(k + 1, ordinal(k + 1), top[k]))
+        name,score = top[k].split('\t')
+        print('{}{} place: {} |Score: {}'.format(k + 1, ordinal(k + 1), name.ljust(15),score))
     print("="*70)
 
 
 ##########################################################
-
-# add_account('Eto')
-# add_account('Hikari')
-# show_accounts()
