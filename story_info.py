@@ -300,14 +300,15 @@ Huh?
 I don't have a toe...
 
 /[acquire or discover a magical weapon - immediately after]
-Ah... I have seen this kind of wand before. I was a magic engineer.
-Eww. My head feels like it's going to break...
+Ah... I have seen this kind of wand before. 
+Oh, now I remember. I was a magic engineer.
+Eww. My head feels like it's about to break...
 
 /[When you have acquired or discovered a charming type Magical weapon]
 The 『charming』 type! That was what i was researching, dedicating my life.
 But, what was my goal?
 
-Oh yeah! There were four magical 'types' that kept the world in balance.
+Oh yeah... There were four magical 'types' that kept the world in balance.
 I think the subject of my research was to find out what 『charming』 type means.
 
 /[when killed HarryPotter or Gandalph]
@@ -328,12 +329,17 @@ Oh...
 I was exiled to this cave.
 It must be difficult to atone for here, as I can always leave here... 
 
-I killed all the guards :( 
+... because I killed all the guards!
 
 I must have lost my memory when I fell into this cave prison.
 First things first, I should get out this cave...
 
 /[True end: Escape from the cave]
+
+W A I T.
+
+Wait a moment.
+
 I was supposed to stay inside this cave prison because of my guilt.
 I had to atone for it as a life sentence.
 In the past, I caused a catastrophe that could not be stopped even if all the wizards in the world cooperate with each other.
@@ -347,9 +353,13 @@ It was a living creature.
 Seeing that I have harmed life so easily, I must have done the same thing multiple times before I came to this prison.
 So when I leave the cave, I must atone for my sins.
 
-Please give me a stronger punishment...
+Please give me a stronger punishment... 
+
+Please.
 
 - True ending
+
+(Next story - after getting out of the prison - comming soon!)
 
 /[Bad end: Escape from the cave without progressing enough]
 Whoa... Escape!
