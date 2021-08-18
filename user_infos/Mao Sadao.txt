@@ -1,0 +1,10 @@
+Logged in date: 2021-08-18-23:07:14
+Play result: < Victory! > 
+[mode: Normal] [map: cave] [handicap: 6] [earned titles:  the Rich]
+Total score: 6.3
+
+Logged in date: 2021-08-18-23:18:35
+Play result: < Victory! > 
+[mode: Sudden Death] [map: room_tester] [handicap: 0] [earned titles: ]
+Total score: 0.0
+
