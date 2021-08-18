@@ -204,6 +204,7 @@ def update_user_activity(user_name, mode, map, handicap, is_victorious, title, s
         f.write('{}{}'.format(play_data, '\n\n'))
 
 
+
 def back_ascii_remover(txt):
     ansi_escape_8bit = re.compile(
         '\033\\[([0-9]+)*m'
