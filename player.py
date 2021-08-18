@@ -1,16 +1,19 @@
 import random, math
 import items, world, util, title, statuses
+
 '''
 For player's actions, you also need to define wrapper classes (to use them with hotkeys) in the actions.py module.
 All the effects of player's actions must be written here.
 '''
 
+
 class Player:
-    def __init__(self,name,player_minimap):
+    def __init__(self, name, player_minimap):
         self.name = name
         self.title = ''
         self.inventory = [items.Gold(25), items.Rock(), items.Apple()]
-        self.stats = {'agi': statuses.Agility(), 'def': statuses.Defence(), 'lrn': statuses.Learning(), 'str': statuses.Strength(), 'mga': statuses.MagicAffinity(), 'stb': statuses.Stability()}
+        self.stats = {'agi': statuses.Agility(), 'def': statuses.Defence(), 'lrn': statuses.Learning(),
+                      'str': statuses.Strength(), 'mga': statuses.MagicAffinity(), 'stb': statuses.Stability()}
         self.hp = 100
         self.hpmax = 100
         self.level = 0
@@ -22,6 +25,13 @@ class Player:
         self.player_minimap = player_minimap
         self.victory = False
 
+        # player condition variable
+        self.condition = 'None'
+        self.bleed = False  # If bleeding: Whenever player moves, hp -1.
+        self.bleed_damage = 1
+        self.bleed_notice_amount = 7
+        self.bleed_count = 6  # initially 6. After that, start from 0.
+
         # helper variables
         self.prev_weapon = None
 
@@ -30,34 +40,74 @@ class Player:
         # self.soulmax = 100
         # ##########################
 
+    def update_condition(self):
+        self.condition = 'None'
+        if self.bleed:
+            self.condition = '\033[91m{}\033[0m'.format('Bleeding')
+        # other conditions check here!
+
+        ##############################
+
+    ############################################################ Bleeding option
+    def stop_bleed(self):
+        if self.bleed:
+            self.bleed = False
+            print('''My bleeding stopped!
+            ''')
+        else:
+            print('''I wasn't bleeding. Maybe I wasted the item...
+            ''')
+
+    def make_bleed(self):
+        self.bleed = True
+
+    def notice_bleed(self):
+        if self.bleed_count == self.bleed_notice_amount:
+            self.bleed_count = 0
+            print('''
+            \033[91m{}\033[0m
+            '''.format("I'm bleeding... I have to eat styptic..."))
+
+    def bleed_effect(self):
+        if self.bleed:
+            self.take_damage(self.bleed_damage)
+            self.bleed_count += 1
+            self.notice_bleed()
+            if not self.is_alive():
+                self.resurrection_check()
+
+    #############################################################################
+
     def get_location(self):
         return self.location_x, self.location_y
 
     def show_minimap(self):
         self.player_minimap.load(self.location_x, self.location_y)
 
-    def give(self,*items):
+    def give(self, *items):
         items_list = [*items]
         self.inventory = self.inventory + items_list
 
-    def take_away(self,*items):
-        item_list = [*items]
+    def take_away(self, *the_items):
+        item_list = [*the_items]
         for i in item_list:
             self.inventory.remove(i)
+            if isinstance(i, items.Weapon) and self.prev_weapon == i:  # 해당 무기가 인벤토리에서 없어졌다면 더이상 previous weapon에는 없어야함!
+                self.prev_weapon = None
 
     # return items of such type (if exists), otherwise returns False
-    def item_of_type_in_inv(self,type):  # 이때 type에는 items.Shield 같은거를 넣어야 한다
+    def item_of_type_in_inv(self, type):  # 이때 type에는 items.Shield 같은거를 넣어야 한다
         item_list = []
         for i in self.inventory:
-            if isinstance(i,type):
+            if isinstance(i, type):
                 item_list.append(i)
 
-        if item_list==[]:
+        if item_list == []:
             return False
         else:
             return item_list
 
-    def find_item_and_value_with_maximum_property(self,item_list,property):
+    def find_item_and_value_with_maximum_property(self, item_list, property):
         max = 0
         item = None
         for i in item_list:
@@ -65,10 +115,10 @@ class Player:
             if tmp >= max:
                 max = tmp
                 item = i
-        return item,max
+        return item, max
 
     def xpmax_calc(self):
-        return 1 + math.ceil(10*math.log(self.level+1))
+        return 1 + math.ceil(10 * math.log(self.level + 1))
 
     def get_upgradable_statuses(self):
         stats = []
@@ -77,8 +127,8 @@ class Player:
                 stats.append(s)
         return stats
 
-    def gain_xp(self,xp):
-        gained_xp = xp*self.stats['lrn'].learning_multiplier()
+    def gain_xp(self, xp):
+        gained_xp = xp * self.stats['lrn'].learning_multiplier()
         self.xp += gained_xp
         print('Gained {} xp!'.format(int(gained_xp)))
         self.check_level_up()  # xp 얻은 후에는 항상 레벨업 했는지 체크해야함
@@ -86,28 +136,31 @@ class Player:
     def check_level_up(self):
         while self.xp >= self.xpmax:
             self.xp -= self.xpmax
-            self.level+=1
+            self.level += 1
             self.xpmax = self.xpmax_calc()
             self.upgrade_status()
-            print("Current xp: {}/{}".format(round(self.xp,2),self.xpmax))
+            print("Current xp: {}/{}".format(round(self.xp, 2), self.xpmax))
 
     def is_alive(self):
         return self.hp > 0
 
+    def inventory_reset(self):
+        self.inventory = []
+
     def print_inventory(self):
-        print('='*29,'<Inventory>','='*29)
+        print('=' * 29, '<Inventory>', '=' * 29)
         for item in self.inventory:
             print(item, '\n')
-        print('='*70)
+        print('=' * 70)
 
     def print_viewed_mobs(self):
         print('=' * 25, '<Mob seen by you>', '=' * 24)
-        if self.viewed_mobs==[]:
-            print("Have not seen any so far...")
+        if self.viewed_mobs == []:
+            print("Haven't seen anyone so far...")
         else:
             for mob in self.viewed_mobs:
-                print(mob,'\n')
-        print('='*70)
+                print(mob, '\n')
+        print('=' * 70)
 
     def title_check(self):
         title_list = title.titles
@@ -120,12 +173,15 @@ class Player:
         print('=' * 30, '<status>', '=' * 30)
         stat = '\n'
         for s in self.stats.values():
-            stat = stat+str(s) + '\n'
-        status_info = "\nName: {}\nLevel: {}\nXP: {} / {}\nHP: \033[91m{}\033[0m/{}\n".format(self.name+self.title,self.level, round(self.xp,2), self.xpmax, self.hp,self.hpmax) + stat
+            stat = stat + str(s) + '\n'
+        self.update_condition()
+        status_info = "\nName: {}\nLevel: {}\nXP: {} / {}\nHP: \033[91m{}\033[0m/{}\nMy condition: {}\n".format(
+            self.name + self.title, self.level, round(self.xp, 2), self.xpmax, self.hp, self.hpmax,
+            self.condition) + stat
         print(status_info)
-        print('='*70)
+        print('=' * 70)
 
-    def key_check(self,room_locked_state): # return true if corresponding key exists. Else false.
+    def key_check(self, room_locked_state):  # return true if corresponding key exists. Else false.
         player_keys = []
         has_some_key = False
         has_right_key = False
@@ -136,20 +192,21 @@ class Player:
 
         for key in player_keys:
             if key.can_open(room_locked_state):
-                self.take_away(key)
+                # self.take_away(key) 이젠 열쇠 가져가지 마요~
                 has_right_key = True
         return has_some_key, has_right_key
 
-    def force_location(self,x,y):
+    def force_location(self, x, y):
         self.location_x = x
         self.location_y = y
 
-    def location_update(self, dx, dy):
+    def location_update(self, dx, dy):  # player가 실제로 move했을 때 실행된다.
         self.location_x += dx
         self.location_y += dy
+        self.bleed_effect()
 
     def move(self, dx, dy):
-        location_of_interest = (self.location_x+dx, self.location_y+dy)
+        location_of_interest = (self.location_x + dx, self.location_y + dy)
         locked_state = world.tile_exists(location_of_interest[0], location_of_interest[1]).locked_state
         if locked_state == '':
             self.location_update(dx, dy)
@@ -181,14 +238,14 @@ class Player:
     def move_left(self):
         self.move(dx=-1, dy=0)
 
-    def ammo_check(self,weapon):
+    def ammo_check(self, weapon):
         ammo_exists = False
         for x in self.inventory:
             if weapon.is_ammo(x):
                 ammo_exists = True
         return ammo_exists
 
-    def consume_ammo(self,weapon):
+    def consume_ammo(self, weapon):
         for x in self.inventory:
             if x.name == weapon.ammoname:
                 self.take_away(x)
@@ -204,44 +261,48 @@ class Player:
         else:
             print("Flee failed!")
 
-
-    def do_action(self, action, **kwargs): # How to use: getattr(the object that calls following method,object(that contains the method attribute).method.__name__)()
+    def do_action(self, action,
+                  **kwargs):  # How to use: getattr(the object that calls following method,object(that contains the method attribute).method.__name__)()
         action_method = getattr(self, action.method.__name__)
         if action_method:
             action_method(**kwargs)
 
+    def take_damage(self, damage):
+        self.hp = self.hp - damage
+
     # used in tiles - enemy, npc
-    def take_damage(self,enemy_damage):
+    def take_enemy_damage(self, enemy_damage):
         defence_multiplier = 0
-        shields =self.item_of_type_in_inv(items.Shield)
+        shields = self.item_of_type_in_inv(items.Shield)
         if shields:
             shield, def_mul = self.find_item_and_value_with_maximum_property(shields, 'defence_mul')
             defence_multiplier = def_mul
 
         if not util.random_success(self.stats['agi'].dodge_prob()):  # dodge not successful
-            self.hp = self.hp-math.floor(enemy_damage*self.stats['def'].damage_decrease_multiplier()*(1-defence_multiplier))
+            self.take_damage(
+                math.floor(enemy_damage * self.stats['def'].damage_decrease_multiplier() * (1 - defence_multiplier)))
             return True
         else:  # dodge successful
+
             print("You Dodged enemy's attack!")
             return False
 
     def resurrection_check(self):
         for i in self.inventory:
-            if isinstance(i,items.RabbitFoot):
+            if isinstance(i, items.RabbitFoot):
                 self.hp = i.resurrection_hp
                 self.take_away(i)
-                print("[You revived due to something magical]\n{} HP: \033[91m{}\033[0m".format(self.name,self.hp))
+                print("[You revived due to something magical]\n{} HP: \033[91m{}\033[0m".format(self.name, self.hp))
 
     # helper method for heal
-    def heal_calc(self,amt):
-        return min(self.hpmax, self.hp+amt)
-
+    def heal_calc(self, amt):
+        return min(self.hpmax, self.hp + amt)
 
     def talk(self, npc):
         self.title_check()
-        print('{}: Hello..?'.format(self.name+self.title))
+        print('{}: Hello..?'.format(self.name + self.title))
         print(npc.talk())
-        print('='*70)
+        print('=' * 70)
 
     # helper method for trade
     def count_gold(self):
@@ -295,7 +356,7 @@ class Player:
         return answer
 
     # helper method for heal
-    def food_list(self,item_list):
+    def food_list(self, item_list):
         food_list = []
         for i in item_list:
             if isinstance(i, items.Food):
@@ -316,7 +377,7 @@ class Player:
         print("Select an item:")
         for action in available_actions.items():
             print('{}: {}'.format(action[0], action[1].name))
-        print("(Type 'q' to go back)")
+        print("(Type 'q' to quit)")
 
         available_hotkeys = ['%s' % (i + 1) for i in range(len(available_actions))] + ['q']
         return available_actions, available_hotkeys
@@ -328,11 +389,11 @@ class Player:
         print("Which status do you want to increase?")
         self.print_status()
         available_actions, available_hotkeys = self.show_available_actions(self.get_upgradable_statuses())
-        print('='*70)
+        print('=' * 70)
         action_input = input('Select: ')
         print('=' * 70)
         item = self.choice_selector(available_actions, available_hotkeys, action_input)
-        if item: # if not quit (item is returned)
+        if item:  # if not quit (item is returned)
             item.upgrade()
         else:
             item = available_actions['1']  # 기본으로 choice 1을 업그레이드!
@@ -349,21 +410,24 @@ class Player:
             available_actions, available_hotkeys = self.show_available_actions(self.food_list(self.inventory))
             if len(available_actions) < 1:
                 print("Uhm... I have nothing to eat TT.")
-                print('='*70)
+                print('=' * 70)
                 return
             print('=' * 70)
             action_input = input('Select: ')
             print('=' * 70)
             item = self.choice_selector(available_actions, available_hotkeys, action_input)
-            if item: # if not quit (item is returned)
+            if item:  # if not quit (item is returned)
                 if item.is_healing():
                     self.hp = self.heal_calc(item.healamt)
-                    print("Yummy~. I think my stomach is {} fuller! \n{} HP: \033[91m{}\033[0m\n".format(item.healamt,self.name,self.hp))
+                    print("Yummy~. I think my stomach is {} fuller! \n{} HP: \033[91m{}\033[0m\n".format(item.healamt,
+                                                                                                         self.name,
+                                                                                                         self.hp))
                 else:
                     print("Oooh, xp!")
                     self.gain_xp(item.contained_xp)
+                item.effect(self)
+                print('=' * 70)
                 self.take_away(item)
-
             else:
                 print("I ate enough.")
                 break
@@ -377,22 +441,23 @@ class Player:
         while action_input != 'q':
             print("Which item do you want to buy?")
             print('My money: {}'.format(self.count_gold()))
-            available_actions, available_hotkeys = self.show_available_actions(self.affordable_items(npc.show_trades(show = False)))
+            available_actions, available_hotkeys = self.show_available_actions(
+                self.affordable_items(npc.show_trades(show=False)))
             print('=' * 70)
             action_input = input('Select: ')
             print('=' * 70)
             item = self.choice_selector(available_actions, available_hotkeys, action_input)
-            if item: # if not quit (item is returned)
+            if item:  # if not quit (item is returned)
                 self.give(item)
                 self.pay(item.value)
                 print(
                     "\n>> Bought {} for {} gold.\n>> Remaining Gold: {}\n".format(item.name, item.value,
-                                                                              self.count_gold()))
+                                                                                  self.count_gold()))
             else:
                 print("I bought enough. Thanks!")
                 break
 
-    def get_items_not_gold(self,items_list):
+    def get_items_not_gold(self, items_list):
         items_that_are_not_gold = []
         for i in items_list:
             if not isinstance(i, items.Gold):
@@ -408,23 +473,24 @@ class Player:
             while action_input != 'q':
                 print("Which item do you want to sell?")
                 print('=' * 70)
-                available_actions, available_hotkeys = self.show_available_actions(self.get_items_not_gold(self.inventory))
+                available_actions, available_hotkeys = self.show_available_actions(
+                    self.get_items_not_gold(self.inventory))
                 print('=' * 70)
                 action_input = input('Select: ')
                 print('=' * 70)
                 item = self.choice_selector(available_actions, available_hotkeys, action_input)
-                if item: # if not quit (item is returned)
+                if item:  # if not quit (item is returned)
                     self.take_away(item)
-                    sell_value = round(item.value*sell_ratio,0)
+                    sell_value = round(item.value * sell_ratio, 0)
                     self.inventory = self.inventory + self.charges(sell_value)
                     print(
                         "\n>> Sold {} for {} gold.\n>> My Gold: {}\n".format(item.name, sell_value,
-                                                                                  self.count_gold()))
+                                                                             self.count_gold()))
                 else:
                     print("Thanks!")
                     break
 
-    def usable_weapon_list(self,inventory,show=True):
+    def usable_weapon_list(self, inventory, show=True):
         usable_weapons = []
         damage_list = []
         for i in inventory:
@@ -432,24 +498,25 @@ class Player:
                 if i.lvrestriction <= self.level:  # There is level restriction!
                     if isinstance(i, items.Shootable):  # Type을 체크하는 것 보다는 is_shootable을 물어보는게 좋다.
                         if not self.ammo_check(i):
-                            continue # if no ammo, then cannot use!
+                            continue  # if no ammo, then cannot use!
                     usable_weapons.append(i)
-                    damage_list.append(round(i.damage*self.stats['str'].strength_multiplier(i)*self.stats['mga'].magic_multiplier(i),1))
+                    damage_list.append(round(
+                        i.damage * self.stats['str'].strength_multiplier(i) * self.stats['mga'].magic_multiplier(i), 1))
 
         if show:
-            print('=' * 18,'Expected damages of each weapon','=' * 18)
+            print('=' * 18, 'Expected damages of each weapon', '=' * 18)
             for i in range(len(usable_weapons)):
                 print('{}: \033[91m{}\033[0m'.format(usable_weapons[i].name, damage_list[i]), end='\n')
             print('=' * 70)
         return usable_weapons
 
-    def attack_with_previous_option(self,enemy):
+    def attack_with_previous_option(self, enemy):
         if not self.prev_weapon:
-            self.attack(enemy) # 무기를 정하는 곳으로 안내한다
+            self.attack(enemy)  # 무기를 정하는 곳으로 안내한다
         else:
-            self.attack(enemy,use_prev_weapon = True)
+            self.attack(enemy, use_prev_weapon=True)
 
-    def update_prev_weapon(self,new_weapon):
+    def update_prev_weapon(self, new_weapon):
         self.prev_weapon = new_weapon
 
     def get_weapon(self):
@@ -457,29 +524,31 @@ class Player:
                 Attack!
                 ''')
         print("Which weapon do you want to use?")
-        available_actions, available_hotkeys = self.show_available_actions(self.usable_weapon_list(self.inventory, show=True))
+        available_actions, available_hotkeys = self.show_available_actions(
+            self.usable_weapon_list(self.inventory, show=True))
         print('=' * 70)
         action_input = input('Select: ')
         print('=' * 70)
         selected_weapon = self.choice_selector(available_actions, available_hotkeys, action_input)
         return selected_weapon
 
-
-    def attack(self, enemy, use_prev_weapon = False):  # sort for best weapon and use it.
+    def attack(self, enemy, use_prev_weapon=False):  # sort for best weapon and use it.
         selected_weapon = self.prev_weapon
 
-        if not use_prev_weapon: # 무기를 새로 골라야 할때
+        if not use_prev_weapon:  # 무기를 새로 골라야 할때
             selected_weapon = self.get_weapon()
 
-        if selected_weapon: # if not quit (item is returned)
+        if selected_weapon:  # if not quit (item is returned)
             self.update_prev_weapon(selected_weapon)
             print("You use {} against {}!".format(selected_weapon.name, enemy.name))
-            dmg = selected_weapon.get_damage(self.stats['stb'].get_stability(),self.stats['str'].strength_multiplier(selected_weapon),self.stats['mga'].magic_multiplier(selected_weapon))
-            enemy.hp -= round(dmg,1)
+            dmg = selected_weapon.get_damage(self.stats['stb'].get_stability(),
+                                             self.stats['str'].strength_multiplier(selected_weapon),
+                                             self.stats['mga'].magic_multiplier(selected_weapon))
+            enemy.hp -= round(dmg, 1)
             crit = ''
-            if selected_weapon.damage<dmg:
+            if selected_weapon.damage < dmg:
                 crit = ' critical'
-            print("You did {}{} damage!".format(round(dmg,1),crit))
+            print("You did {}{} damage!".format(round(dmg, 1), crit))
 
             if isinstance(selected_weapon, items.Shootable):  # consume ammo
                 self.consume_ammo(selected_weapon)
@@ -488,19 +557,18 @@ class Player:
                 print("You killed {}!".format(enemy.name))
                 enemy.death(self)
             else:
-                print("{} HP: \033[91m{}\033[0m.".format(enemy.name, round(enemy.hp,1)))
+                print("{} HP: \033[91m{}\033[0m.".format(enemy.name, round(enemy.hp, 1)))
 
     def choice_selector(self, available_actions, available_hotkeys, action_input):
         while action_input not in available_hotkeys:
             print(available_hotkeys)
             print(
-                "Incorrect selection. Please choose from the list above. \nIf you want to go back, type 'q'.")
+                "Incorrect selection. Please choose from the list above. \nIf you want to quit, type 'q'.")
             print('=' * 70)
             action_input = input('Select: ')
             print('=' * 70)
 
         if action_input != 'q':
-            item = available_actions[action_input] # 선택한 choice에 해당하는 객체 받아옴
+            item = available_actions[action_input]  # 선택한 choice에 해당하는 객체 받아옴
             return item
         return None
-
