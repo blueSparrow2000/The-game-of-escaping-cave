@@ -1,5 +1,0 @@
-Logged in date: 2021-08-18-16:46:01
-Play result: < Victory! > 
-[mode: God] [map: practice_map(tunnel)] [handicap: 6] [earned titles:   m[90  ]
-Total score: 0
-
