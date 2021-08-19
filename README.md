@@ -1,5 +1,5 @@
 # Go to the below link (My repository) to get a new, stable version!
-https://github.com/blueSparrow2000/the-game-of-escaping-cave-STABLE-VERSION/blob/main/LICENSE
+https://github.com/blueSparrow2000/the-game-of-escaping-cave-STABLE-VERSION
 
 
 ## EDIT: 2021.8.19
