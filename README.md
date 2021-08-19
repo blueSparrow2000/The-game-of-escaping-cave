@@ -31,3 +31,14 @@ This is an interpreter game.
 [![MIT](https://img.shields.io/cocoapods/l/AFNetworking.svg?style=style&label=License&maxAge=2592000)](../master/LICENSE)
 
 Copyright (c) 2021-present, blueSparrow2000
+
+
+
+## EDIT:
+Sorry to those who cloned earlier version.
+I messed up with my github and some codes were not updated.
+The codes probably didn't run...
+Now that I have resetted everything, It should be OK!
+
+Go to the below link (My repository) to get new, stable version!
+https://github.com/blueSparrow2000/the-game-of-escaping-cave-STABLE-VERSION/blob/main/LICENSE
