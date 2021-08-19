@@ -1,4 +1,4 @@
-# Go to the below link (My repository) to get new, stable version!
+# Go to the below link (My repository) to get a new, stable version!
 https://github.com/blueSparrow2000/the-game-of-escaping-cave-STABLE-VERSION/blob/main/LICENSE
 
 
