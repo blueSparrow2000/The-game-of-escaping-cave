@@ -10,6 +10,10 @@ I messed up with my github and some codes were not updated.
 Past codes probably didn't run on your PCs...
 Now that I have resetted everything, It should be OK!
 
+
+So please go to above link for a stable release! 
+(I checked several times!)
+
 _________________________________________________________________
 
 
