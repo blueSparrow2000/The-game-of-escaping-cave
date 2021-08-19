@@ -10,7 +10,7 @@ I messed up with my github and some codes were not updated.
 Past codes probably didn't run on your PCs...
 Now that I have resetted everything, It should be OK!
 
-========================================================================================
+_________________________________________________________________
 
 # Text_based_game
 My first working text based adventure! 
