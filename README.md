@@ -1,15 +1,14 @@
-[Moved to a new repository!]
+# Go to the below link (My repository) to get new, stable version!
+https://github.com/blueSparrow2000/the-game-of-escaping-cave-STABLE-VERSION/blob/main/LICENSE
 
 
 ## EDIT: 2021.8.19
 Sorry to those who cloned earlier version.
 I messed up with my github and some codes were not updated.
-The codes probably didn't run...
+
+
+Past codes probably didn't run on your PCs...
 Now that I have resetted everything, It should be OK!
-
-Go to the below link (My repository) to get new, stable version!
-https://github.com/blueSparrow2000/the-game-of-escaping-cave-STABLE-VERSION/blob/main/LICENSE
-
 
 ========================================================================================
 
