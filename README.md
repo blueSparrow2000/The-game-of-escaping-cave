@@ -1,6 +1,5 @@
 # Go to the below link (My repository) to get a new, stable version!
-https://github.com/blueSparrow2000/the-game-of-escaping-cave-STABLE-VERSION
-
+https://github.com/blueSparrow2000/GOEC
 
 ## EDIT: 2021.8.19
 Sorry to those who cloned earlier version.
