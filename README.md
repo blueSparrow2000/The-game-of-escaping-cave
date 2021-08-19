@@ -11,7 +11,7 @@ Go to the below link (My repository) to get new, stable version!
 https://github.com/blueSparrow2000/the-game-of-escaping-cave-STABLE-VERSION/blob/main/LICENSE
 
 
-
+========================================================================================
 
 # Text_based_game
 My first working text based adventure! 
