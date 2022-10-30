@@ -13,3 +13,4 @@
 s = '01234'
 print(s[:-4])
 
+# I will develop from here
